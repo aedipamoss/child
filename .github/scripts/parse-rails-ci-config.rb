@@ -187,12 +187,18 @@ lint_entries = lint_section.fetch('tasks').flat_map do |task|
 
   task_rubies.map do |ruby_version|
     soft_fail = ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
-    {
+    data = {
       'ruby' => ruby_version,
       'task' => task_hash.fetch('task'),
       'command' => task_hash.fetch('command'),
       'allow_failure' => soft_fail
     }
+
+    if task_hash.key?('working_directory') && !task_hash['working_directory'].to_s.empty?
+      data['working_directory'] = task_hash['working_directory']
+    end
+
+    data
   end
 end
 
