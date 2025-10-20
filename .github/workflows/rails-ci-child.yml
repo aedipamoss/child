@@ -82,7 +82,6 @@ jobs:
           repository: "aedipamoss/child"
           ref: codex
           path: rails-ci
-          token: ${{ secrets.ci_read_token }}
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:

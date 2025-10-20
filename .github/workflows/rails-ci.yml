@@ -27,8 +27,6 @@ jobs:
     with:
       parent-workflow-id: ${{ github.run_id }}
       notes: ${{ inputs.notes }}
-    secrets:
-      ci_read_token: ${{ secrets.ci_read_token }}
 
   build-link:
     name: Build Page Reference
