@@ -239,6 +239,16 @@ jobs:
           if [ -n "$SUITE_FRAMEWORK_PRE_STEPS" ]; then
             bash -lc "$SUITE_FRAMEWORK_PRE_STEPS"
           fi
+          if [ -f package.json ]; then
+            if [ -f yarn.lock ]; then
+              yarn install --frozen-lockfile
+            else
+              yarn install
+            fi
+            yarn cache clean
+          elif [ -f ../actionview/package.json ]; then
+            (cd ../actionview && npm install)
+          fi
           bundle exec rake ${{ matrix.task }}
 
   railties:
