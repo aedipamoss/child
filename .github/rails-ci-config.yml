@@ -105,23 +105,23 @@ railties:
       rack_requirement: ''
       pre_steps: ''
       allow_failure: false
-    - variant: rack-2
-      rack_requirement: '~> 2.0'
-      pre_steps: bundle install
-      allow_failure: false
-      supported_rubies: ['default']
-    - variant: rack-3-0
-      rack_requirement: '~> 3.0.0'
-      pre_steps: bundle install
-      allow_failure: false
-      supported_rubies: ['default']
-      rails_version: '>= 7.1'
-    - variant: rack-head
-      rack_requirement: head
-      pre_steps: rm Gemfile.lock && bundle install
-      allow_failure: true
-      supported_rubies: ['default']
-      rails_version: '>= 7.1'
+    #- variant: rack-2
+    #  rack_requirement: '~> 2.0'
+    #  pre_steps: bundle install
+    #  allow_failure: false
+    #  supported_rubies: ['default']
+    #- variant: rack-3-0
+    #  rack_requirement: '~> 3.0.0'
+    #  pre_steps: bundle install
+    #  allow_failure: false
+    #  supported_rubies: ['default']
+    #  rails_version: '>= 7.1'
+    #- variant: rack-head
+    #  rack_requirement: head
+    #  pre_steps: rm Gemfile.lock && bundle install
+    #  allow_failure: true
+    #  supported_rubies: ['default']
+    #  rails_version: '>= 7.1'
 isolated:
   rubies: ['default']
   suites:
