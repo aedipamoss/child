@@ -15,10 +15,6 @@ on:
         description: Identifier for the upstream workflow run
         required: true
         type: string
-    secrets:
-      ci_read_token:
-        description: Token with read access to CI resources
-        required: true
 
 permissions:
   contents: read

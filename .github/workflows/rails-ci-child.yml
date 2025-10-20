@@ -11,10 +11,6 @@ on:
         description: Additional notes passed from the parent workflow
         required: false
         type: string
-    secrets:
-      ci_read_token:
-        description: Token with read access to CI resources
-        required: true
 
 permissions:
   contents: read
@@ -49,6 +45,11 @@ jobs:
   load-config:
     name: Load Rails CI Configuration
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      actions: write
+
     outputs:
       lint-matrix: ${{ steps.extract.outputs.lint-matrix }}
       frameworks-matrix: ${{ steps.extract.outputs.frameworks-matrix }}
