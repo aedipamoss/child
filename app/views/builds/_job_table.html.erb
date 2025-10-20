@@ -1,0 +1,33 @@
+<%# locals: title, jobs %>
+<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+  <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+    <h3 class="text-sm font-semibold text-slate-700"><%= title %></h3>
+    <span class="text-xs text-slate-500"><%= pluralize(jobs.size, "job") %></span>
+  </div>
+  <ul class="divide-y divide-slate-200">
+    <% jobs.each do |job| %>
+      <li class="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm text-slate-700">
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="truncate font-medium text-slate-900">
+            <% if job.html_url.present? %>
+              <%= link_to job.name, job.html_url, class: "hover:text-blue-600", target: "_blank", rel: "noreferrer" %>
+            <% else %>
+              <%= job.name %>
+            <% end %>
+          </span>
+          <span class="text-xs text-slate-500">
+            Started <%= formatted_timestamp(job.started_at) %>
+            · Completed <%= formatted_timestamp(job.completed_at) %>
+          </span>
+        </div>
+        <div>
+          <%= status_badge(conclusion: job.conclusion, status: job.status) %>
+        </div>
+        <div class="w-24 text-right text-xs text-slate-500">
+          <span class="font-medium text-slate-700">Duration:</span>
+          <span class="ml-1"><%= duration_label(job.duration_seconds) %></span>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+</div>

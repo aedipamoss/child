@@ -1,0 +1,86 @@
+name: Rails CI PoC
+
+on:
+  workflow_call:
+    inputs:
+      head_sha:
+        description: Commit SHA to use for reporting
+        required: true
+        type: string
+      notes:
+        description: Optional notes about this run
+        required: false
+        type: string
+      parent_workflow_id:
+        description: Identifier for the upstream workflow run
+        required: true
+        type: string
+    secrets:
+      ci_read_token:
+        description: Token with read access to CI resources
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  rails-ci:
+    name: Run Rails CI Child Workflow
+    uses: ./.github/workflows/rails-ci-child.yml
+    with:
+      parent-workflow-id: ${{ github.run_id }}
+      notes: ${{ inputs.notes }}
+    secrets:
+      ci_read_token: ${{ secrets.ci_read_token }}
+
+  build-link:
+    name: Build Page Reference
+    needs: rails-ci
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Publish build link
+        run: |
+          echo "::notice title=Rails CI Build::Track the build at https://example.com/build/${{ github.run_id }}"
+
+  report:
+    name: Report Rails CI Status
+    needs: rails-ci
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+    steps:
+      - name: Prepare summary
+        run: |
+          cat <<'SUMMARY' > report.md
+          # Rails CI Summary
+          * Parent workflow ID: ${{ github.run_id }}
+          * Child workflow result: ${{ needs.rails-ci.result }}
+          * Triggered by: ${{ github.actor }}
+          SUMMARY
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: rails-ci-summary
+          path: report.md
+      - name: Update check run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ needs.rails-ci.result }}
+        run: |
+          conclusion="success"
+          if [ "$RESULT" != "success" ]; then
+            conclusion="failure"
+          fi
+          gh api repos/${{ github.repository }}/check-runs \
+            -X POST \
+            -F name="rails-ci-poc" \
+            -F head_sha="${{ github.sha }}" \
+            -F status="completed" \
+            -F conclusion="$conclusion" \
+            -F output.title="Rails CI (PoC)" \
+            -F output.summary="Workflow ${{ github.run_id }} finished with $RESULT."

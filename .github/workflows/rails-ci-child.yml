@@ -1,0 +1,455 @@
+name: Rails CI Child
+
+on:
+  workflow_call:
+    inputs:
+      parent-workflow-id:
+        description: Identifier of the parent workflow run
+        required: true
+        type: string
+      notes:
+        description: Additional notes passed from the parent workflow
+        required: false
+        type: string
+    secrets:
+      ci_read_token:
+        description: Token with read access to CI resources
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  BUNDLE_WITHOUT: "development:production"
+  CI: "true"
+  BEANSTALK_URL: beanstalk://127.0.0.1:11300
+  MEMCACHE_SERVERS: 127.0.0.1:11211
+  MYSQL_HOST: 127.0.0.1
+  MYSQL_PORT: 3306
+  MYSQL_USERNAME: root
+  MYSQL_PASSWORD: ""
+  MYSQL_SOCKET: ""
+  MYSQL_PREPARED_STATEMENTS: ""
+  PGHOST: 127.0.0.1
+  PGPORT: 5432
+  PGUSER: postgres
+  PGDATABASE: postgres
+  POSTGRES_HOST: 127.0.0.1
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: ""
+  QC_DATABASE_URL: postgres://postgres@127.0.0.1:5432/active_jobs_qc_int_test
+  QUE_DATABASE_URL: postgres://postgres@127.0.0.1:5432/active_jobs_que_int_test
+  RABBITMQ_URL: amqp://guest:guest@127.0.0.1:5672
+  REDIS_URL: redis://127.0.0.1:6379/1
+  SELENIUM_DRIVER_URL: http://127.0.0.1:4444/wd/hub
+
+jobs:
+  load-config:
+    name: Load Rails CI Configuration
+    runs-on: ubuntu-latest
+    outputs:
+      lint-matrix: ${{ steps.extract.outputs.lint-matrix }}
+      frameworks-matrix: ${{ steps.extract.outputs.frameworks-matrix }}
+      railties-matrix: ${{ steps.extract.outputs.railties-matrix }}
+      isolated-matrix: ${{ steps.extract.outputs.isolated-matrix }}
+      default-ruby: ${{ steps.extract.outputs.ruby-default }}
+      supported-rubies: ${{ steps.extract.outputs.ruby-supported }}
+    steps:
+      #- name: Fetch parent workflow metadata
+      #  id: parent
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  run: |
+      #    set -euo pipefail
+      #    response=$(curl -sSf -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+      #      -H "Accept: application/vnd.github+json" \
+      #      "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.parent-workflow-id }}")
+      #    source_repository=$(echo "$response" | jq -r '.head_repository.full_name')
+      #    source_ref=$(echo "$response" | jq -r '.head_branch // empty')
+      #    source_sha=$(echo "$response" | jq -r '.head_sha')
+      #    if [ -z "$source_ref" ]; then
+      #      source_ref="$source_sha"
+      #    fi
+      #    echo "source-repository=$source_repository" >> "$GITHUB_OUTPUT"
+      #    echo "source-ref=$source_ref" >> "$GITHUB_OUTPUT"
+      #    echo "source-sha=$source_sha" >> "$GITHUB_OUTPUT"
+      - name: Checkout Rails CI utilities
+        uses: actions/checkout@v4
+        with:
+          repository: "aedipamoss/child"
+          ref: codex
+          path: rails-ci
+          token: ${{ secrets.ci_read_token }}
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          #repository: ${{ steps.parent.outputs.source-repository }}
+          #ref: ${{ steps.parent.outputs.source-ref }}
+          path: source
+      - name: debug whats in PWD
+        run: ls -la "$PWD"
+      - name: debug whats in github.workspace
+        run: ls -la "${{ github.workspace }}"
+      - name: debug whats in /home
+        run: ls -la /home
+      - name: debug whats in $PWD/source
+        run: ls -la "${{ github.workspace }}/source"
+      - name: debug whats in $PWD/rails-ci
+        run: ls -la "${{ github.workspace }}/rails-ci"
+      - name: Parse config
+        id: extract
+        run: |
+          ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config.rb" \
+            "${{ github.workspace }}/rails-ci/.github/rails-ci-config.yml" \
+            "${{ github.workspace }}/source"
+
+  lint:
+    needs: load-config
+    name: Lint (${{ matrix.task }}) on Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.load-config.outputs.lint-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+      - name: Run lint command
+        run: ${{ matrix.command }}
+
+  frameworks:
+    needs: load-config
+    name: ${{ matrix.display_name }} (${{ matrix.ruby }})${{ matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+    services:
+      mysql:
+        image: ${{ matrix.mysql_image && matrix.mysql_image || 'mysql:8.0' }}
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      memcached:
+        image: memcached:1.6-alpine
+        ports:
+          - 11211:11211
+      rabbitmq:
+        image: rabbitmq:3.12-alpine
+        ports:
+          - 5672:5672
+      beanstalkd:
+        image: schickling/beanstalkd:latest
+        ports:
+          - 11300:11300
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.load-config.outputs.frameworks-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl \
+            gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+          curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-libmysqlclient-dev \
+            ffmpeg \
+            libpq-dev \
+            libsqlite3-dev \
+            lsof \
+            mupdf \
+            mupdf-tools \
+            mysql-client \
+            nodejs \
+            poppler-utils \
+            postgresql-client \
+            redis-tools \
+            yarn
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+      - name: Run framework task
+        env:
+          SUITE_REPO_PRE_STEPS: ${{ matrix.repo_pre_steps }}
+          SUITE_FRAMEWORK_PRE_STEPS: ${{ matrix.framework_pre_steps }}
+          MYSQL_IMAGE: ${{ matrix.mysql_image }}
+          MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
+        run: |
+          set -eo pipefail
+          rack_requirement="${{ matrix.rack_requirement }}"
+          if [ -n "$rack_requirement" ] && [ "$rack_requirement" != "null" ]; then
+            export RACK="$rack_requirement"
+          else
+            unset RACK
+          fi
+          if [ -n "$SUITE_REPO_PRE_STEPS" ]; then
+            bash -lc "$SUITE_REPO_PRE_STEPS"
+          fi
+          cd "${{ matrix.framework }}"
+          if [ -n "$SUITE_FRAMEWORK_PRE_STEPS" ]; then
+            bash -lc "$SUITE_FRAMEWORK_PRE_STEPS"
+          fi
+          bundle exec rake ${{ matrix.task }}
+
+  railties:
+    needs: load-config
+    name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+    services:
+      mysql:
+        image: ${{ matrix.mysql_image && matrix.mysql_image || 'mysql:8.0' }}
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix: ${{ fromJson(needs.load-config.outputs.railties-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl \
+            gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+          curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-libmysqlclient-dev \
+            ffmpeg \
+            libpq-dev \
+            libsqlite3-dev \
+            lsof \
+            mupdf \
+            mupdf-tools \
+            mysql-client \
+            nodejs \
+            poppler-utils \
+            postgresql-client \
+            redis-tools \
+            yarn
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+      - name: Run Railties shard
+        env:
+          PRE_STEPS: ${{ matrix.pre_steps }}
+          RAILS_SHARD: ${{ matrix.shard }}
+        run: |
+          set -eo pipefail
+          rack_requirement="${{ matrix.rack_requirement }}"
+          if [ -n "$rack_requirement" ] && [ "$rack_requirement" != "null" ]; then
+            export RACK="$rack_requirement"
+          else
+            unset RACK
+          fi
+          cd railties
+          if [ -n "$PRE_STEPS" ]; then
+            bash -lc "$PRE_STEPS"
+          fi
+          bundle exec rake test
+
+  isolated:
+    needs: load-config
+    name: "${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+    services:
+      mysql:
+        image: ${{ matrix.mysql_image && matrix.mysql_image || 'mysql:8.0' }}
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.load-config.outputs.isolated-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl \
+            gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+          curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-libmysqlclient-dev \
+            ffmpeg \
+            libpq-dev \
+            libsqlite3-dev \
+            lsof \
+            mupdf \
+            mupdf-tools \
+            mysql-client \
+            nodejs \
+            poppler-utils \
+            postgresql-client \
+            redis-tools \
+            yarn
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+      - name: Run isolated task
+        run: |
+          set -eo pipefail
+          echo "Parent workflow ID: ${{ inputs.parent-workflow-id }}"
+          echo "Executing ${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
+          cd "${{ matrix.framework_dir }}"
+          bundle exec rake ${{ matrix.task }}
+
+  completion:
+    name: Child Workflow Completion Summary
+    needs:
+      - lint
+      - frameworks
+      - railties
+      - isolated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarize results
+        run: |
+          cat <<JSON > summary.json
+          {
+            "parent_workflow_id": "${{ inputs.parent-workflow-id }}",
+            "lint": "${{ needs.lint.result }}",
+            "frameworks": "${{ needs.frameworks.result }}",
+            "railties": "${{ needs.railties.result }}",
+            "isolated": "${{ needs.isolated.result }}"
+          }
+          JSON
+          cat summary.json
+      - name: Upload child summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: rails-ci-child-summary
+          path: summary.json

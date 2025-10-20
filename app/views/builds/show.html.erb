@@ -1,0 +1,69 @@
+<div class="py-10">
+  <div class="mb-8 flex flex-wrap items-baseline justify-between gap-4">
+    <div>
+      <p class="text-sm uppercase tracking-wide text-slate-500">Workflow run</p>
+      <h1 class="text-3xl font-semibold text-slate-900">Run #<%= @build.parent_run.id %></h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Repository <span class="font-medium text-slate-700"><%= @repository %></span>
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to "View parent run", @build.parent_run.html_url, class: "inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:border-slate-300 hover:text-slate-900", target: "_blank", rel: "noreferrer" if @build.parent_run.html_url.present? %>
+      <% if @build.child_run&.html_url.present? %>
+        <%= link_to "View child run", @build.child_run.html_url, class: "inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700", target: "_blank", rel: "noreferrer" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">Parent workflow</h2>
+      <p class="mt-1 text-sm text-slate-500">Proof-of-concept dispatcher</p>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <%= status_badge(conclusion: @build.parent_run.conclusion, status: @build.parent_run.status) %>
+        <span class="text-sm text-slate-500">Started <%= formatted_timestamp(@build.parent_run.created_at) %></span>
+        <span class="text-sm text-slate-500">Updated <%= formatted_timestamp(@build.parent_run.updated_at) %></span>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">Rails build workflow</h2>
+      <% if @build.child_run %>
+        <p class="mt-1 text-sm text-slate-500">Workflow file <code class="rounded bg-slate-100 px-1 py-0.5 text-xs"><%= @child_workflow %></code></p>
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <%= status_badge(conclusion: @build.child_run.conclusion, status: @build.child_run.status) %>
+          <span class="text-sm text-slate-500">Started <%= formatted_timestamp(@build.child_run.created_at) %></span>
+          <span class="text-sm text-slate-500">Updated <%= formatted_timestamp(@build.child_run.updated_at) %></span>
+        </div>
+      <% else %>
+        <p class="mt-2 text-sm text-slate-500">No child workflow run associated with this parent could be found yet. It may still be provisioning.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-10 space-y-8">
+    <section>
+      <h2 class="text-xl font-semibold text-slate-900">Parent jobs</h2>
+      <% if @build.parent_jobs.any? %>
+        <div class="mt-4">
+          <%= render partial: "job_table", locals: { title: "Parent workflow steps", jobs: @build.parent_jobs } %>
+        </div>
+      <% else %>
+        <p class="mt-3 text-sm text-slate-500">No jobs were reported for this workflow run.</p>
+      <% end %>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-semibold text-slate-900">Rails build groups</h2>
+      <% if @build.child_jobs.any? %>
+        <div class="mt-4 grid gap-6 lg:grid-cols-2">
+          <% grouped_jobs(@build.child_jobs).each do |group_name, jobs| %>
+            <%= render partial: "job_table", locals: { title: group_name, jobs: jobs } %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="mt-3 text-sm text-slate-500">Child workflow jobs will appear here once the build has started running.</p>
+      <% end %>
+    </section>
+  </div>
+</div>
