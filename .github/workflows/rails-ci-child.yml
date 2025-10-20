@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: "aedipamoss/child"
-          ref: codex
+          ref: main
           path: rails-ci
       - name: Checkout source repository
         uses: actions/checkout@v4
