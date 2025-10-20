@@ -256,12 +256,14 @@ railties_entries = railties_section.fetch('variants').flat_map do |variant|
   variant_rubies = expand_ruby_tokens(variant_tokens, ruby_catalog)
   variant_rubies = railties_default_rubies if variant_rubies.empty?
   shards = Array(variant_hash.delete('shards') || default_shards)
+  total_shards = shards.length
 
   variant_rubies.flat_map do |ruby_version|
     shards.map do |shard|
       data = variant_hash.dup
       data['ruby'] = ruby_version
       data['shard'] = shard
+      data['total_shards'] = total_shards
       data['variant'] = data['variant'] || 'default'
       data['rack_requirement'] = data['rack_requirement'] || ''
       data['pre_steps'] = data['pre_steps'] || ''
