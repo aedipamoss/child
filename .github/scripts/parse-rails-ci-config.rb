@@ -17,6 +17,95 @@ RAILS_ROOT = Pathname.new(ARGV[1]).expand_path
 NUMERIC_RUBY = /\A\d+\.\d+/
 DEFAULT_RUBY_CANDIDATES = %w[3.4 3.3 3.2 3.1 3.0 2.7 2.6 2.5 2.4].freeze
 
+MYSQL_DEFAULT_IMAGE = 'mysql:8.0'
+POSTGRES_DEFAULT_IMAGE = 'postgres:15'
+REDIS_DEFAULT_IMAGE = 'redis:7'
+
+def mysql_health_command(image)
+  normalized = image.to_s
+  return 'mysqladmin ping -h 127.0.0.1' if normalized.empty?
+
+  if normalized.include?('mariadb')
+    'healthcheck.sh --su-mysql --connect --innodb_initialized'
+  else
+    'mysqladmin ping -h 127.0.0.1'
+  end
+end
+
+def mysql_service(image: nil)
+  selected_image = image.to_s.empty? ? MYSQL_DEFAULT_IMAGE : image
+  {
+    'image' => selected_image,
+    'env' => {
+      'MYSQL_ALLOW_EMPTY_PASSWORD' => 'yes',
+      'MYSQL_ROOT_HOST' => '%'
+    },
+    'ports' => ['3306:3306'],
+    'options' => [
+      "--health-cmd=\"#{mysql_health_command(selected_image)}\"",
+      '--health-interval=10s',
+      '--health-timeout=5s',
+      '--health-retries=5'
+    ].join(' ')
+  }
+end
+
+def postgres_service(image: POSTGRES_DEFAULT_IMAGE)
+  {
+    'image' => image,
+    'env' => {
+      'POSTGRES_USER' => 'postgres',
+      'POSTGRES_DB' => 'postgres',
+      'POSTGRES_HOST_AUTH_METHOD' => 'trust'
+    },
+    'ports' => ['5432:5432'],
+    'options' => [
+      '--health-cmd="pg_isready -U postgres"',
+      '--health-interval=10s',
+      '--health-timeout=5s',
+      '--health-retries=5'
+    ].join(' ')
+  }
+end
+
+def redis_service(image: REDIS_DEFAULT_IMAGE)
+  {
+    'image' => image,
+    'ports' => ['6379:6379'],
+    'options' => [
+      '--health-cmd="redis-cli ping"',
+      '--health-interval=10s',
+      '--health-timeout=5s',
+      '--health-retries=5'
+    ].join(' ')
+  }
+end
+
+def common_services(mysql_image: nil)
+  {
+    'mysql' => mysql_service(image: mysql_image),
+    'postgres' => postgres_service,
+    'redis' => redis_service
+  }
+end
+
+def framework_services(mysql_image: nil)
+  common_services(mysql_image: mysql_image).merge(
+    'memcached' => {
+      'image' => 'memcached:1.6-alpine',
+      'ports' => ['11211:11211']
+    },
+    'rabbitmq' => {
+      'image' => 'rabbitmq:3.12-alpine',
+      'ports' => ['5672:5672']
+    },
+    'beanstalkd' => {
+      'image' => 'schickling/beanstalkd:latest',
+      'ports' => ['11300:11300']
+    }
+  )
+end
+
 def env_ruby_candidates
   env = ENV.fetch('RAILS_CI_RUBIES', nil)
   return [] if env.nil? || env.strip.empty?
@@ -237,6 +326,7 @@ framework_entries = frameworks_section.fetch('entries').flat_map do |entry|
     data['task'] = data['task'].nil? || data['task'].empty? ? 'test' : data['task']
     display_name = data.delete('name')
     data['display_name'] = display_name.nil? || display_name.empty? ? data['framework'] : display_name
+    data['services'] = JSON.dump(framework_services(mysql_image: data['mysql_image']))
     data
   end
 end
@@ -269,6 +359,7 @@ railties_entries = railties_section.fetch('variants').flat_map do |variant|
       data['rack_requirement'] = data['rack_requirement'] || ''
       data['pre_steps'] = data['pre_steps'] || ''
       data['allow_failure'] = !!data.fetch('allow_failure', false) || ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
+      data['services'] = JSON.dump(common_services(mysql_image: data['mysql_image']))
       data
     end
   end
@@ -295,6 +386,7 @@ isolated_entries = isolated_section.fetch('suites').flat_map do |suite|
     data['framework_dir'] = data['framework_dir'].nil? || data['framework_dir'].empty? ? data['framework'] : data['framework_dir']
     data['variant_label'] = data['variant_label'] || ''
     data['allow_failure'] = !!data.fetch('allow_failure', false) || ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
+    data['services'] = JSON.dump(common_services(mysql_image: data['mysql_image']))
     data
   end
 end

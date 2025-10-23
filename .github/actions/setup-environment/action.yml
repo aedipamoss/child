@@ -1,0 +1,62 @@
+name: Setup Rails CI environment
+description: Install optional system dependencies, configure Ruby, and install gems.
+inputs:
+  ruby-version:
+    description: Ruby version to install.
+    required: true
+  bundler-cache:
+    description: Whether to enable Bundler caching.
+    required: false
+    default: 'false'
+  install-system-dependencies:
+    description: Install system dependencies required by the Rails test suites.
+    required: false
+    default: 'false'
+  bundle-install:
+    description: Run "bundle install" after setting up Ruby.
+    required: false
+    default: 'true'
+  bundle-working-directory:
+    description: Directory in which to run "bundle install".
+    required: false
+    default: '.'
+runs:
+  using: composite
+  steps:
+    - if: ${{ inputs.install-system-dependencies == 'true' }}
+      shell: bash
+      run: |
+        set -eo pipefail
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          ca-certificates \
+          curl \
+          gnupg
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+        curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          default-libmysqlclient-dev \
+          ffmpeg \
+          libpq-dev \
+          libsqlite3-dev \
+          lsof \
+          mupdf \
+          mupdf-tools \
+          mysql-client \
+          nodejs \
+          poppler-utils \
+          postgresql-client \
+          redis-tools \
+          yarn
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+        bundler-cache: ${{ inputs.bundler-cache }}
+    - if: ${{ inputs.bundle-install != 'false' }}
+      shell: bash
+      working-directory: ${{ inputs.bundle-working-directory }}
+      run: bundle install --jobs 4 --retry 3

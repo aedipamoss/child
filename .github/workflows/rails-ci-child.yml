@@ -119,13 +119,9 @@ jobs:
       matrix: ${{ fromJson(needs.load-config.outputs.lint-matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ./.github/actions/setup-environment
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: false
-      - name: Install gems
-        run: bundle install --jobs 4 --retry 3
       - name: Run lint command
         working-directory: ${{ matrix.working_directory || '.' }}
         run: ${{ matrix.command }}
@@ -135,93 +131,16 @@ jobs:
     name: ${{ matrix.display_name }} (${{ matrix.ruby }})${{ matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }}
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.allow_failure }}
-    services:
-      mysql:
-        image: ${{ matrix.mysql_image && matrix.mysql_image || 'mysql:8.0' }}
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-          MYSQL_ROOT_HOST: "%"
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="${{ contains(matrix.mysql_image || 'mysql:8.0', 'mariadb') && 'healthcheck.sh --su-mysql --connect --innodb_initialized' || 'mysqladmin ping -h 127.0.0.1' }}"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      memcached:
-        image: memcached:1.6-alpine
-        ports:
-          - 11211:11211
-      rabbitmq:
-        image: rabbitmq:3.12-alpine
-        ports:
-          - 5672:5672
-      beanstalkd:
-        image: schickling/beanstalkd:latest
-        ports:
-          - 11300:11300
+    services: ${{ fromJson(matrix.services) }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.load-config.outputs.frameworks-matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install system dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            ca-certificates \
-            curl \
-            gnupg
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-          curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            default-libmysqlclient-dev \
-            ffmpeg \
-            libpq-dev \
-            libsqlite3-dev \
-            lsof \
-            mupdf \
-            mupdf-tools \
-            mysql-client \
-            nodejs \
-            poppler-utils \
-            postgresql-client \
-            redis-tools \
-            yarn
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ./.github/actions/setup-environment
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: false
-      - name: Install gems
-        run: bundle install --jobs 4 --retry 3
+          install-system-dependencies: "true"
       - name: Run framework task
         env:
           SUITE_REPO_PRE_STEPS: ${{ matrix.repo_pre_steps }}
@@ -260,82 +179,17 @@ jobs:
     name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.allow_failure }}
-    services:
-      mysql:
-        image: ${{ matrix.mysql_image && matrix.mysql_image || 'mysql:8.0' }}
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-          MYSQL_ROOT_HOST: "%"
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="${{ contains(matrix.mysql_image || 'mysql:8.0', 'mariadb') && 'healthcheck.sh --su-mysql --connect --innodb_initialized' || 'mysqladmin ping -h 127.0.0.1' }}"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    services: ${{ fromJson(matrix.services) }}
     strategy:
       fail-fast: false
       max-parallel: 12
       matrix: ${{ fromJson(needs.load-config.outputs.railties-matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install system dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            ca-certificates \
-            curl \
-            gnupg
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-          curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            default-libmysqlclient-dev \
-            ffmpeg \
-            libpq-dev \
-            libsqlite3-dev \
-            lsof \
-            mupdf \
-            mupdf-tools \
-            mysql-client \
-            nodejs \
-            poppler-utils \
-            postgresql-client \
-            redis-tools \
-            yarn
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ./.github/actions/setup-environment
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: false
-      - name: Install gems
-        run: bundle install --jobs 4 --retry 3
+          install-system-dependencies: "true"
       - name: Run Railties shard
         env:
           PRE_STEPS: ${{ matrix.pre_steps }}
@@ -361,81 +215,16 @@ jobs:
     name: "${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.allow_failure }}
-    services:
-      mysql:
-        image: ${{ matrix.mysql_image && matrix.mysql_image || 'mysql:8.0' }}
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-          MYSQL_ROOT_HOST: "%"
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="${{ contains(matrix.mysql_image || 'mysql:8.0', 'mariadb') && 'healthcheck.sh --su-mysql --connect --innodb_initialized' || 'mysqladmin ping -h 127.0.0.1' }}"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    services: ${{ fromJson(matrix.services) }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.load-config.outputs.isolated-matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install system dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            ca-certificates \
-            curl \
-            gnupg
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-          curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            default-libmysqlclient-dev \
-            ffmpeg \
-            libpq-dev \
-            libsqlite3-dev \
-            lsof \
-            mupdf \
-            mupdf-tools \
-            mysql-client \
-            nodejs \
-            poppler-utils \
-            postgresql-client \
-            redis-tools \
-            yarn
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ./.github/actions/setup-environment
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: false
-      - name: Install gems
-        run: bundle install --jobs 4 --retry 3
+          install-system-dependencies: "true"
       - name: Run isolated task
         run: |
           set -eo pipefail
