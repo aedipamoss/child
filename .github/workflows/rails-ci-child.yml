@@ -336,7 +336,7 @@ jobs:
         env:
           PRE_STEPS: ${{ matrix.pre_steps }}
           RAILS_SHARD: ${{ matrix.shard }}
-          BUILDKITE_PARALLEL_JOB: ${{ matrix.shard - 1 }}
+          BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
           BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
         run: |
           set -eo pipefail

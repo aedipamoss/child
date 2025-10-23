@@ -259,11 +259,12 @@ railties_entries = railties_section.fetch('variants').flat_map do |variant|
   total_shards = shards.length
 
   variant_rubies.flat_map do |ruby_version|
-    shards.map do |shard|
+    shards.each_with_index.map do |shard, index|
       data = variant_hash.dup
       data['ruby'] = ruby_version
       data['shard'] = shard
       data['total_shards'] = total_shards
+      data['parallel_job'] = index
       data['variant'] = data['variant'] || 'default'
       data['rack_requirement'] = data['rack_requirement'] || ''
       data['pre_steps'] = data['pre_steps'] || ''
