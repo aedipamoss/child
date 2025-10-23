@@ -144,7 +144,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-cmd="${{ contains(matrix.mysql_image || 'mysql:8.0', 'mariadb') && 'healthcheck.sh --su-mysql --connect --innodb_initialized' || 'mysqladmin ping -h 127.0.0.1' }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -269,7 +269,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-cmd="${{ contains(matrix.mysql_image || 'mysql:8.0', 'mariadb') && 'healthcheck.sh --su-mysql --connect --innodb_initialized' || 'mysqladmin ping -h 127.0.0.1' }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -370,7 +370,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-cmd="${{ contains(matrix.mysql_image || 'mysql:8.0', 'mariadb') && 'healthcheck.sh --su-mysql --connect --innodb_initialized' || 'mysqladmin ping -h 127.0.0.1' }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
