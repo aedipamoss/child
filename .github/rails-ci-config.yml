@@ -58,8 +58,6 @@ frameworks:
       task: 'db:mysql:rebuild mysql2:test'
       repo_pre_steps: &mysql_init |
         mysql -h127.0.0.1 -uroot -e "
-          SET GLOBAL default_storage_engine = 'InnoDB';
-          SET SESSION default_storage_engine = 'InnoDB';
           SHOW VARIABLES LIKE '%storage_engine%';
 
           CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
