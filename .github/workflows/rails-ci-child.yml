@@ -21,8 +21,8 @@ on:
         type: string
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
+  actions: read
 
 env:
   BUNDLE_WITHOUT: "development:production"
@@ -59,8 +59,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
-      actions: write
+      contents: read
+      actions: read
 
     outputs:
       lint-matrix: ${{ steps.extract.outputs.lint-matrix }}
