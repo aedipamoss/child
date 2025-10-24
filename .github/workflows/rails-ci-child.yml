@@ -27,6 +27,7 @@ permissions:
 env:
   BUNDLE_WITHOUT: "development:production"
   CI: "true"
+  BUILDKITE: "true" # omg lol
   BEANSTALK_URL: beanstalk://127.0.0.1:11300
   MEMCACHE_SERVERS: 127.0.0.1:11211
   MYSQL_HOST: 127.0.0.1
