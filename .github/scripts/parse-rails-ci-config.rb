@@ -380,6 +380,8 @@ isolated_entries = isolated_section.fetch('suites').flat_map do |suite|
   suite_rubies = expand_ruby_tokens(suite_tokens, ruby_catalog)
   suite_rubies = isolated_default_rubies if suite_rubies.empty?
 
+  suite_services = base.key?('services') ? base.delete('services') : common_services(mysql_image: base['mysql_image'])
+
   suite_rubies.map do |ruby_version|
     data = base.dup
     data['ruby'] = ruby_version
@@ -387,7 +389,7 @@ isolated_entries = isolated_section.fetch('suites').flat_map do |suite|
     data['framework_dir'] = data['framework_dir'].nil? || data['framework_dir'].empty? ? data['framework'] : data['framework_dir']
     data['variant_label'] = data['variant_label'] || ''
     data['allow_failure'] = !!data.fetch('allow_failure', false) || ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
-    data['services'] = JSON.dump(common_services(mysql_image: data['mysql_image']))
+    data['services'] = JSON.dump(suite_services)
     data
   end
 end

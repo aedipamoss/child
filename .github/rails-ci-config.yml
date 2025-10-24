@@ -168,3 +168,7 @@ isolated:
       task: 'test:isolated'
     - framework: activesupport
       task: 'test:isolated'
+      services:
+        memcached:
+          image: memcached:1.6-alpine
+          ports: ['11211:11211']
