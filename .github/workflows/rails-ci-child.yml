@@ -238,7 +238,10 @@ jobs:
           if [ -n "$PRE_STEPS" ]; then
             bash -lc "$PRE_STEPS"
           fi
-          bundle exec rake test
+          # Allocate a pseudo-TTY so tests that check colorized output
+          # (like Rails::ConsoleTest#test_prompt_env_colorization) see a
+          # TTY and enable ANSI escape sequences.
+          script -q -e -c "bundle exec rake test"
 
   isolated:
     needs: load-config
