@@ -38,7 +38,8 @@ def mysql_service(image: nil)
     'image' => selected_image,
     'env' => {
       'MYSQL_ALLOW_EMPTY_PASSWORD' => 'yes',
-      'MYSQL_ROOT_HOST' => '%'
+      'MYSQL_ROOT_HOST' => '%',
+      'MYSQLD_OPTS' => '--default-storage-engine=InnoDB --skip-log-bin --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci'
     },
     'ports' => ['3306:3306'],
     'options' => [
@@ -46,12 +47,6 @@ def mysql_service(image: nil)
       '--health-interval=10s',
       '--health-timeout=5s',
       '--health-retries=5',
-      '--',
-      'mysqld',
-      '--default-storage-engine=InnoDB',
-      '--skip-log-bin',
-      '--character-set-server=utf8mb4',
-      '--collation-server=utf8mb4_unicode_ci',
     ].join(' ')
   }
 end
