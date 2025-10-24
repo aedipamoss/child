@@ -380,7 +380,8 @@ isolated_entries = isolated_section.fetch('suites').flat_map do |suite|
   suite_rubies = expand_ruby_tokens(suite_tokens, ruby_catalog)
   suite_rubies = isolated_default_rubies if suite_rubies.empty?
 
-  suite_services = base.key?('services') ? base.delete('services') : common_services(mysql_image: base['mysql_image'])
+  common_services = common_services(mysql_image: base['mysql_image'])
+  suite_services = base.key?('services') ? common_services.merge(base.delete('services')) : common_services
 
   suite_rubies.map do |ruby_version|
     data = base.dup
