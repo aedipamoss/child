@@ -56,6 +56,14 @@ frameworks:
     - framework: activerecord
       variant: mysql2
       task: 'db:mysql:rebuild mysql2:test'
+      repo_pre_steps: |
+        cat <<'SQL' | mysql -h127.0.0.1 -uroot
+        CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
+        GRANT ALL PRIVILEGES ON activerecord_unittest.* TO 'rails'@'%';
+        GRANT ALL PRIVILEGES ON activerecord_unittest2.* TO 'rails'@'%';
+        CREATE DATABASE IF NOT EXISTS activerecord_unittest DEFAULT CHARACTER SET utf8mb4;
+        CREATE DATABASE IF NOT EXISTS activerecord_unittest2 DEFAULT CHARACTER SET utf8mb4;
+        SQL
     - framework: activerecord
       variant: mysql2-mariadb
       task: 'db:mysql:rebuild mysql2:test'

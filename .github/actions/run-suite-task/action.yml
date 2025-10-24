@@ -114,23 +114,6 @@ runs:
           bash -lc "${RUN_TASK_COMMAND}"
         }
 
-        attempt=1
-        while true; do
-          echo "Running attempt ${attempt}/${RUN_TASK_RETRY_COUNT}"
-          if run_task; then
-            break
-          else
-            status=$?
-          fi
-
-          if [ "$attempt" -ge "$RUN_TASK_RETRY_COUNT" ]; then
-            echo "::error::Command failed after ${RUN_TASK_RETRY_COUNT} attempt(s)"
-            exit "$status"
-          fi
-
-          echo "::warning::Attempt ${attempt} failed with exit code ${status}. Retrying..."
-          attempt=$((attempt + 1))
-          sleep 5
-        done
+        run_task
 
         echo "Task completed successfully"
