@@ -116,7 +116,7 @@ rescue ArgumentError
 end
 
 def load_config(path)
-  YAML.load_file(path)
+  YAML.load_file(path, aliases: true)
 rescue Errno::ENOENT
   abort "Configuration file not found: #{path}"
 end
