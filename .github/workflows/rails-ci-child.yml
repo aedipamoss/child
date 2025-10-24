@@ -135,7 +135,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Run lint command
-        uses: ./.github/actions/run-suite-task
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
           command: ${{ matrix.command }}
           working-directory: ${{ matrix.working_directory || '.' }}
@@ -165,7 +165,8 @@ jobs:
           SUITE_FRAMEWORK_PRE_STEPS: ${{ matrix.framework_pre_steps }}
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
           MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
-        uses: ./.github/actions/run-suite-task
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
+
         with:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
           working-directory: ${{ matrix.framework }}
@@ -206,7 +207,7 @@ jobs:
           RAILS_SHARD: ${{ matrix.shard }}
           BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
           BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
-        uses: ./.github/actions/run-suite-task
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
           command: script -q -e -c "bundle exec rake test"
           working-directory: railties
@@ -233,7 +234,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           install-system-dependencies: "true"
       - name: Run isolated task
-        uses: ./.github/actions/run-suite-task
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
           working-directory: ${{ matrix.framework_dir }}
