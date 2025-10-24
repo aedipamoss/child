@@ -27,7 +27,7 @@ permissions:
 env:
   BUNDLE_WITHOUT: "development:production"
   CI: "true"
-  BUILDKITE: "true" # omg lol
+  BUILDKITE: "true"
   BEANSTALK_URL: beanstalk://127.0.0.1:11300
   MEMCACHE_SERVERS: 127.0.0.1:11211
   MYSQL_HOST: 127.0.0.1
@@ -167,45 +167,45 @@ jobs:
           rack-requirement: ${{ matrix.rack_requirement }}
           install-node-dependencies: 'true'
 
-  #railties:
-  #  needs: load-config
-  #  name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
-  #  runs-on: ubuntu-latest
+  railties:
+    needs: load-config
+    name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
 
-  #  env:
-  #    # actions tty
-  #    FORCE_COLOR: "1"
-  #    TERM: xterm-256color
+    env:
+      # actions tty
+      FORCE_COLOR: "1"
+      TERM: xterm-256color
 
-  #  continue-on-error: ${{ matrix.allow_failure }}
-  #  services: ${{ fromJson(matrix.services) }}
-  #  strategy:
-  #    fail-fast: false
-  #    max-parallel: 12
-  #    matrix: ${{ fromJson(needs.load-config.outputs.railties-matrix) }}
-  #  steps:
-  #    - name: Checkout source repository
-  #      uses: actions/checkout@v4
-  #      with:
-  #        repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
-  #        ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
-  #    - uses: aedipamoss/child/.github/actions/setup-environment@main
-  #      with:
-  #        ruby-version: ${{ matrix.ruby }}
-  #        install-system-dependencies: "true"
-  #    - name: Run Railties shard
-  #      env:
-  #        PRE_STEPS: ${{ matrix.pre_steps }}
-  #        RAILS_SHARD: ${{ matrix.shard }}
-  #        BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
-  #        BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
-  #      timeout-minutes: 30
-  #      uses: aedipamoss/child/.github/actions/run-suite-task@main
-  #      with:
-  #        command: script -q -e -c "bundle exec rake test"
-  #        working-directory: railties
-  #        pre-steps: ${{ matrix.pre_steps }}
-  #        rack-requirement: ${{ matrix.rack_requirement }}
+    continue-on-error: ${{ matrix.allow_failure }}
+    services: ${{ fromJson(matrix.services) }}
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix: ${{ fromJson(needs.load-config.outputs.railties-matrix) }}
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+      - uses: aedipamoss/child/.github/actions/setup-environment@main
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          install-system-dependencies: "true"
+      - name: Run Railties shard
+        env:
+          PRE_STEPS: ${{ matrix.pre_steps }}
+          RAILS_SHARD: ${{ matrix.shard }}
+          BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
+          BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
+        timeout-minutes: 30
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
+        with:
+          command: script -q -e -c "bundle exec rake test"
+          working-directory: railties
+          pre-steps: ${{ matrix.pre_steps }}
+          rack-requirement: ${{ matrix.rack_requirement }}
 
   isolated:
     needs: load-config
@@ -241,7 +241,7 @@ jobs:
     needs:
       - lint
       - frameworks
-      #- railties
+      - railties
       - isolated
     runs-on: ubuntu-latest
     steps:
@@ -252,6 +252,7 @@ jobs:
             "parent_workflow_id": "${{ inputs.parent-workflow-id }}",
             "lint": "${{ needs.lint.result }}",
             "frameworks": "${{ needs.frameworks.result }}",
+            "railties": "${{ needs.railties.result }}",
             "isolated": "${{ needs.isolated.result }}"
           }
           JSON
