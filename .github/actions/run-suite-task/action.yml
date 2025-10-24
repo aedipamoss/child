@@ -31,7 +31,7 @@ inputs:
   retry-count:
     description: Number of attempts to run the command before failing.
     required: false
-    default: '3'
+    default: '0'
 runs:
   using: composite
   steps:
