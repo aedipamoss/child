@@ -46,6 +46,11 @@ runs:
         RUN_TASK_RACK_REQUIREMENT: ${{ inputs['rack-requirement'] }}
         RUN_TASK_INSTALL_NODE: ${{ inputs['install-node-dependencies'] }}
         RUN_TASK_RETRY_COUNT: ${{ inputs['retry-count'] }}
+
+        # actions tty
+        FORCE_COLOR: "1"
+        TERM: xterm-256color
+
       run: |
         set -eo pipefail
 
