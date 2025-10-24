@@ -17,9 +17,9 @@ RAILS_ROOT = Pathname.new(ARGV[1]).expand_path
 NUMERIC_RUBY = /\A\d+\.\d+/
 DEFAULT_RUBY_CANDIDATES = %w[3.4 3.3 3.2 3.1 3.0 2.7 2.6 2.5 2.4].freeze
 
-MYSQL_DEFAULT_IMAGE = 'mysql:8.0'
-POSTGRES_DEFAULT_IMAGE = 'postgres:15'
-REDIS_DEFAULT_IMAGE = 'redis:7'
+MYSQL_DEFAULT_IMAGE = 'mysql:latest'
+POSTGRES_DEFAULT_IMAGE = 'postgres:alpine'
+REDIS_DEFAULT_IMAGE = 'redis:alpine'
 
 def mysql_health_command(image)
   normalized = image.to_s
