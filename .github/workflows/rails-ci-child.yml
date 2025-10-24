@@ -21,8 +21,8 @@ on:
         type: string
 
 permissions:
-  contents: read
-  actions: read
+  contents: write
+  actions: write
 
 env:
   BUNDLE_WITHOUT: "development:production"

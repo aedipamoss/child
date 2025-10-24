@@ -7,8 +7,8 @@ on:
       - main
 
 permissions:
-  contents: read
-  actions: read
+  contents: write
+  actions: write
 
 jobs:
   test-child:
