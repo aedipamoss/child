@@ -100,16 +100,6 @@ jobs:
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
           path: source
-      - name: debug whats in PWD
-        run: ls -la "$PWD"
-      - name: debug whats in github.workspace
-        run: ls -la "${{ github.workspace }}"
-      - name: debug whats in /home
-        run: ls -la /home
-      - name: debug whats in $PWD/source
-        run: ls -la "${{ github.workspace }}/source"
-      - name: debug whats in $PWD/rails-ci
-        run: ls -la "${{ github.workspace }}/rails-ci"
       - name: Parse config
         id: extract
         run: |
