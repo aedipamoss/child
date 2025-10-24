@@ -198,6 +198,12 @@ jobs:
     needs: load-config
     name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
+
+    env:
+      # actions tty
+      FORCE_COLOR: "1"
+      TERM: xterm-256color
+
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
