@@ -46,6 +46,7 @@ runs:
         RUN_TASK_RACK_REQUIREMENT: ${{ inputs['rack-requirement'] }}
         RUN_TASK_INSTALL_NODE: ${{ inputs['install-node-dependencies'] }}
         RUN_TASK_RETRY_COUNT: ${{ inputs['retry-count'] }}
+      timeout-minutes: 30
       run: |
         set -eo pipefail
 
