@@ -1,0 +1,21 @@
+name: Test Child Workflow Against Rails Main
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test-child:
+    name: Run child workflow with rails/rails@main
+    uses: ./.github/workflows/rails-ci-child.yml
+    with:
+      parent-workflow-id: ${{ github.run_id }}
+      notes: Test run against rails/rails@main
+      source-repository: rails/rails
+      source-ref: main

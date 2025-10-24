@@ -11,6 +11,14 @@ on:
         description: Additional notes passed from the parent workflow
         required: false
         type: string
+      source-repository:
+        description: Repository containing the Rails source to test
+        required: false
+        type: string
+      source-ref:
+        description: Git ref of the Rails source to test
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -89,8 +97,8 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
-          #repository: ${{ steps.parent.outputs.source-repository }}
-          #ref: ${{ steps.parent.outputs.source-ref }}
+          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
           path: source
       - name: debug whats in PWD
         run: ls -la "$PWD"
