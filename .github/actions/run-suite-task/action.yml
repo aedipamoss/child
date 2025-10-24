@@ -120,9 +120,10 @@ runs:
           echo "Running attempt ${attempt}/${RUN_TASK_RETRY_COUNT}"
           if run_task; then
             break
+          else
+            status=$?
           fi
 
-          status=$?
           if [ "$attempt" -ge "$RUN_TASK_RETRY_COUNT" ]; then
             echo "::error::Command failed after ${RUN_TASK_RETRY_COUNT} attempt(s)"
             exit "$status"
