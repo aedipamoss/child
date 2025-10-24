@@ -27,31 +27,90 @@ runs:
       shell: bash
       run: |
         set -eo pipefail
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
-          ca-certificates \
-          curl \
-          gnupg
-        sudo mkdir -p /etc/apt/keyrings
-        curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/nodesource.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-        curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor --yes --batch -o /etc/apt/keyrings/yarn.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
-          default-libmysqlclient-dev \
-          ffmpeg \
-          libpq-dev \
-          libsqlite3-dev \
-          lsof \
-          mupdf \
-          mupdf-tools \
-          mysql-client \
-          nodejs \
-          poppler-utils \
-          postgresql-client \
-          redis-tools \
-          yarn
+        # Pre-requirements
+        && if ! which gpg || ! which curl; then \
+            apt-get update \
+            && apt-get install -y --no-install-recommends \
+                gnupg curl; \
+        fi \
+        # Debian 12 (bookworm) has this directory by default, but older Debian does not
+        && mkdir -p /etc/apt/keyrings \
+        # Postgres apt sources
+        && curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg \
+        && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ ${codename}-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+        # Node apt sources
+        && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+        && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+        # Yarn apt sources
+        && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /etc/apt/keyrings/yarn.gpg \
+        && echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] http://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
+        # Install all the things
+        && apt-get update \
+        #  buildpack-deps
+        && apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            bzip2 \
+            dpkg-dev \
+            file \
+            g++ \
+            gcc \
+            imagemagick \
+            libbz2-dev \
+            libc6-dev \
+            libcurl4-openssl-dev \
+            libdb-dev \
+            libevent-dev \
+            libffi-dev \
+            libgdbm-dev \
+            libgeoip-dev \
+            libglib2.0-dev \
+            libjpeg-dev \
+            libkrb5-dev \
+            liblzma-dev \
+            libmagickcore-dev \
+            libmagickwand-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libpng-dev \
+            libpq-dev \
+            libreadline-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            libtool \
+            libvips-dev \
+            libwebp-dev \
+            libxml2-dev \
+            libxslt-dev \
+            libyaml-dev \
+            make \
+            patch \
+            unzip \
+            xz-utils \
+            zlib1g-dev \
+            \
+        # https://lists.debian.org/debian-devel-announce/2016/09/msg00000.html
+            $( \
+        # if we use just "apt-cache show" here, it returns zero because "Can't select versions from package 'libmysqlclient-dev' as it is purely virtual", hence the pipe to grep
+                if apt-cache show 'default-libmysqlclient-dev' 2>/dev/null | grep -q '^Version:'; then \
+                    echo 'default-libmysqlclient-dev'; \
+                else \
+                    echo 'libmysqlclient-dev'; \
+                fi \
+            ) \
+            $( \
+                if apt-cache show 'tzdata-legacy' 2>/dev/null | grep -q '^Version:'; then \
+                    echo 'tzdata-legacy'; \
+                fi \
+            ) \
+        #  specific dependencies for the rails build
+        && apt-get install -y --no-install-recommends \
+            postgresql-client default-mysql-client sqlite3 \
+            git nodejs=18.19.0-1nodesource1 yarn lsof \
+            ffmpeg mupdf mupdf-tools poppler-utils \
+        # clean up
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* /tmp/*
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby-version }}
