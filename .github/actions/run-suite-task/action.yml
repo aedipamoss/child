@@ -1,0 +1,135 @@
+name: Run Rails suite task
+description: Execute a Rails CI task with retries and optional setup steps.
+inputs:
+  command:
+    description: Command to run for the task.
+    required: true
+  working-directory:
+    description: Working directory relative to the repository root.
+    required: false
+    default: '.'
+  repo-pre-steps:
+    description: Commands to run from the repository root before changing into the working directory.
+    required: false
+    default: ''
+  framework-pre-steps:
+    description: Commands to run inside the working directory before the main command.
+    required: false
+    default: ''
+  pre-steps:
+    description: Additional commands to run after framework-pre-steps but before the main command.
+    required: false
+    default: ''
+  rack-requirement:
+    description: Optional rack version requirement to export as RACK.
+    required: false
+    default: ''
+  install-node-dependencies:
+    description: Install JavaScript dependencies if package.json is detected.
+    required: false
+    default: 'false'
+  retry-count:
+    description: Number of attempts to run the command before failing.
+    required: false
+    default: '3'
+runs:
+  using: composite
+  steps:
+    - name: Run task with retries
+      shell: bash
+      env:
+        RUN_TASK_COMMAND: ${{ inputs.command }}
+        RUN_TASK_WORKING_DIRECTORY: ${{ inputs['working-directory'] }}
+        RUN_TASK_REPO_PRE_STEPS: ${{ inputs['repo-pre-steps'] }}
+        RUN_TASK_FRAMEWORK_PRE_STEPS: ${{ inputs['framework-pre-steps'] }}
+        RUN_TASK_PRE_STEPS: ${{ inputs['pre-steps'] }}
+        RUN_TASK_RACK_REQUIREMENT: ${{ inputs['rack-requirement'] }}
+        RUN_TASK_INSTALL_NODE: ${{ inputs['install-node-dependencies'] }}
+        RUN_TASK_RETRY_COUNT: ${{ inputs['retry-count'] }}
+      run: |
+        set -eo pipefail
+
+        if [ -z "${RUN_TASK_RETRY_COUNT}" ] || ! [[ "${RUN_TASK_RETRY_COUNT}" =~ ^[0-9]+$ ]] || [ "${RUN_TASK_RETRY_COUNT}" -lt 1 ]; then
+          echo "::warning::Invalid retry-count '${RUN_TASK_RETRY_COUNT}', defaulting to 1"
+          RUN_TASK_RETRY_COUNT=1
+        fi
+
+        run_task() {
+          set -eo pipefail
+
+          workspace="${GITHUB_WORKSPACE:-}"
+          if [ -z "$workspace" ]; then
+            echo "::error::GITHUB_WORKSPACE is not set" >&2
+            return 1
+          fi
+
+          if [ -n "${RUN_TASK_REPO_PRE_STEPS}" ] && [ "${RUN_TASK_REPO_PRE_STEPS}" != "null" ]; then
+            (
+              set -eo pipefail
+              cd "$workspace"
+              bash -lc "${RUN_TASK_REPO_PRE_STEPS}"
+            )
+          fi
+
+          workdir="$workspace"
+          if [ -n "${RUN_TASK_WORKING_DIRECTORY}" ] && [ "${RUN_TASK_WORKING_DIRECTORY}" != "." ]; then
+            workdir="$workspace/${RUN_TASK_WORKING_DIRECTORY}"
+          fi
+
+          if [ ! -d "$workdir" ]; then
+            echo "::error::Working directory '$workdir' does not exist" >&2
+            return 1
+          fi
+
+          if [ -n "${RUN_TASK_RACK_REQUIREMENT}" ] && [ "${RUN_TASK_RACK_REQUIREMENT}" != "null" ]; then
+            export RACK="${RUN_TASK_RACK_REQUIREMENT}"
+          else
+            unset RACK || true
+          fi
+
+          cd "$workdir"
+
+          if [ -n "${RUN_TASK_FRAMEWORK_PRE_STEPS}" ] && [ "${RUN_TASK_FRAMEWORK_PRE_STEPS}" != "null" ]; then
+            bash -lc "${RUN_TASK_FRAMEWORK_PRE_STEPS}"
+          fi
+
+          if [ -n "${RUN_TASK_PRE_STEPS}" ] && [ "${RUN_TASK_PRE_STEPS}" != "null" ]; then
+            bash -lc "${RUN_TASK_PRE_STEPS}"
+          fi
+
+          install_node="$(printf '%s' "${RUN_TASK_INSTALL_NODE}" | tr '[:upper:]' '[:lower:]')"
+          if [ "$install_node" = "true" ]; then
+            if [ -f package.json ]; then
+              if [ -f yarn.lock ]; then
+                yarn install --frozen-lockfile
+              else
+                yarn install
+              fi
+              yarn cache clean
+            elif [ -f ../actionview/package.json ]; then
+              (cd ../actionview && npm install)
+            fi
+          fi
+
+          bash -lc "${RUN_TASK_COMMAND}"
+        }
+
+        attempt=1
+        while true; do
+          echo "Running attempt ${attempt}/${RUN_TASK_RETRY_COUNT}"
+          if run_task; then
+            break
+          fi
+
+          status=$?
+          if [ "$attempt" -ge "$RUN_TASK_RETRY_COUNT" ]; then
+            echo "::error::Command failed after ${RUN_TASK_RETRY_COUNT} attempt(s)"
+            exit "$status"
+          fi
+
+          echo "::warning::Attempt ${attempt} failed with exit code ${status}. Retrying..."
+          attempt=$((attempt + 1))
+          sleep 5
+        done
+
+        echo "Task completed successfully"

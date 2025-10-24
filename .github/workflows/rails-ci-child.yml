@@ -135,11 +135,10 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Run lint command
-        run: |
-          set -eo pipefail
-          workdir="${{ matrix.working_directory || '.' }}"
-          cd "$GITHUB_WORKSPACE/$workdir"
-          ${{ matrix.command }}
+        uses: ./.github/actions/run-suite-task
+        with:
+          command: ${{ matrix.command }}
+          working-directory: ${{ matrix.working_directory || '.' }}
 
   frameworks:
     needs: load-config
@@ -166,33 +165,14 @@ jobs:
           SUITE_FRAMEWORK_PRE_STEPS: ${{ matrix.framework_pre_steps }}
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
           MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
-        run: |
-          set -eo pipefail
-          rack_requirement="${{ matrix.rack_requirement }}"
-          if [ -n "$rack_requirement" ] && [ "$rack_requirement" != "null" ]; then
-            export RACK="$rack_requirement"
-          else
-            unset RACK
-          fi
-          cd "$GITHUB_WORKSPACE"
-          if [ -n "$SUITE_REPO_PRE_STEPS" ]; then
-            bash -lc "$SUITE_REPO_PRE_STEPS"
-          fi
-          cd "${{ matrix.framework }}"
-          if [ -n "$SUITE_FRAMEWORK_PRE_STEPS" ]; then
-            bash -lc "$SUITE_FRAMEWORK_PRE_STEPS"
-          fi
-          if [ -f package.json ]; then
-            if [ -f yarn.lock ]; then
-              yarn install --frozen-lockfile
-            else
-              yarn install
-            fi
-            yarn cache clean
-          elif [ -f ../actionview/package.json ]; then
-            (cd ../actionview && npm install)
-          fi
-          script -q -e -c "bundle exec rake ${{ matrix.task }}"
+        uses: ./.github/actions/run-suite-task
+        with:
+          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
+          working-directory: ${{ matrix.framework }}
+          repo-pre-steps: ${{ matrix.repo_pre_steps }}
+          framework-pre-steps: ${{ matrix.framework_pre_steps }}
+          rack-requirement: ${{ matrix.rack_requirement }}
+          install-node-dependencies: 'true'
 
   railties:
     needs: load-config
@@ -226,22 +206,12 @@ jobs:
           RAILS_SHARD: ${{ matrix.shard }}
           BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
           BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
-        run: |
-          set -eo pipefail
-          rack_requirement="${{ matrix.rack_requirement }}"
-          if [ -n "$rack_requirement" ] && [ "$rack_requirement" != "null" ]; then
-            export RACK="$rack_requirement"
-          else
-            unset RACK
-          fi
-          cd "$GITHUB_WORKSPACE/railties"
-          if [ -n "$PRE_STEPS" ]; then
-            bash -lc "$PRE_STEPS"
-          fi
-          # Allocate a pseudo-TTY so tests that check colorized output
-          # (like Rails::ConsoleTest#test_prompt_env_colorization) see a
-          # TTY and enable ANSI escape sequences.
-          script -q -e -c "bundle exec rake test"
+        uses: ./.github/actions/run-suite-task
+        with:
+          command: script -q -e -c "bundle exec rake test"
+          working-directory: railties
+          pre-steps: ${{ matrix.pre_steps }}
+          rack-requirement: ${{ matrix.rack_requirement }}
 
   isolated:
     needs: load-config
@@ -263,12 +233,13 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           install-system-dependencies: "true"
       - name: Run isolated task
-        run: |
-          set -eo pipefail
-          echo "Parent workflow ID: ${{ inputs.parent-workflow-id }}"
-          echo "Executing ${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
-          cd "$GITHUB_WORKSPACE/${{ matrix.framework_dir }}"
-          script -q -e -c "bundle exec rake ${{ matrix.task }}"
+        uses: ./.github/actions/run-suite-task
+        with:
+          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
+          working-directory: ${{ matrix.framework_dir }}
+          pre-steps: |
+            echo "Parent workflow ID: ${{ inputs.parent-workflow-id }}"
+            echo "Executing ${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
 
   completion:
     name: Child Workflow Completion Summary
