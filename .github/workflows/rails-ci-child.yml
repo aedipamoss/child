@@ -126,13 +126,20 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.load-config.outputs.lint-matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Run lint command
-        working-directory: ${{ matrix.working_directory || '.' }}
-        run: ${{ matrix.command }}
+        run: |
+          set -eo pipefail
+          workdir="${{ matrix.working_directory || '.' }}"
+          cd "$GITHUB_WORKSPACE/$workdir"
+          ${{ matrix.command }}
 
   frameworks:
     needs: load-config
@@ -144,7 +151,11 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.load-config.outputs.frameworks-matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
@@ -163,6 +174,7 @@ jobs:
           else
             unset RACK
           fi
+          cd "$GITHUB_WORKSPACE"
           if [ -n "$SUITE_REPO_PRE_STEPS" ]; then
             bash -lc "$SUITE_REPO_PRE_STEPS"
           fi
@@ -193,7 +205,11 @@ jobs:
       max-parallel: 12
       matrix: ${{ fromJson(needs.load-config.outputs.railties-matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
@@ -212,7 +228,7 @@ jobs:
           else
             unset RACK
           fi
-          cd railties
+          cd "$GITHUB_WORKSPACE/railties"
           if [ -n "$PRE_STEPS" ]; then
             bash -lc "$PRE_STEPS"
           fi
@@ -228,7 +244,11 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.load-config.outputs.isolated-matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
@@ -238,7 +258,7 @@ jobs:
           set -eo pipefail
           echo "Parent workflow ID: ${{ inputs.parent-workflow-id }}"
           echo "Executing ${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
-          cd "${{ matrix.framework_dir }}"
+          cd "$GITHUB_WORKSPACE/${{ matrix.framework_dir }}"
           bundle exec rake ${{ matrix.task }}
 
   completion:
