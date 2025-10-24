@@ -60,6 +60,9 @@ frameworks:
         mysql -h127.0.0.1 -uroot -e "
           SET GLOBAL default_storage_engine = 'InnoDB';
           SET SESSION default_storage_engine = 'InnoDB';
+          SET GLOBAL storage_engine = 'InnoDB';
+          SET SESSION storage_engine = 'InnoDB';
+          SHOW VARIABLES LIKE '%storage_engine%';
 
           CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
           GRANT ALL PRIVILEGES ON activerecord_unittest.* TO 'rails'@'%';

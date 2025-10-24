@@ -45,7 +45,8 @@ def mysql_service(image: nil)
       "--health-cmd=\"#{mysql_health_command(selected_image)}\"",
       '--health-interval=10s',
       '--health-timeout=5s',
-      '--health-retries=5'
+      '--health-retries=5',
+      '--default-storage-engine=INNODB'
     ].join(' ')
   }
 end
