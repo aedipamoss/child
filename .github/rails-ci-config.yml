@@ -116,10 +116,10 @@ frameworks:
     - framework: activestorage
     - framework: activesupport
     - framework: guides
-railties:
-  rubies: ['default']
-  shards: [1,2,3,4,5,6,7,8,9,10,11,12]
-  variants:
+#railties:
+#  rubies: ['default']
+#  shards: [1,2,3,4,5,6,7,8,9,10,11,12]
+#  variants:
     #- variant: default
     #  rack_requirement: ''
     #  pre_steps: ''
