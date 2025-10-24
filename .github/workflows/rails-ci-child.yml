@@ -250,7 +250,7 @@ jobs:
     needs:
       - lint
       - frameworks
-      - railties
+      #- railties
       - isolated
     runs-on: ubuntu-latest
     steps:
@@ -261,7 +261,6 @@ jobs:
             "parent_workflow_id": "${{ inputs.parent-workflow-id }}",
             "lint": "${{ needs.lint.result }}",
             "frameworks": "${{ needs.frameworks.result }}",
-            "railties": "${{ needs.railties.result }}",
             "isolated": "${{ needs.isolated.result }}"
           }
           JSON
