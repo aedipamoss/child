@@ -192,7 +192,7 @@ jobs:
           elif [ -f ../actionview/package.json ]; then
             (cd ../actionview && npm install)
           fi
-          bundle exec rake ${{ matrix.task }}
+          script -q -e -c "bundle exec rake ${{ matrix.task }}"
 
   railties:
     needs: load-config
@@ -268,7 +268,7 @@ jobs:
           echo "Parent workflow ID: ${{ inputs.parent-workflow-id }}"
           echo "Executing ${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
           cd "$GITHUB_WORKSPACE/${{ matrix.framework_dir }}"
-          bundle exec rake ${{ matrix.task }}
+          script -q -e -c "bundle exec rake ${{ matrix.task }}"
 
   completion:
     name: Child Workflow Completion Summary
