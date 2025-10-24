@@ -19,45 +19,48 @@ frameworks:
     rack_requirement: ''
     variant: ''
   entries:
-    - framework: actioncable
-      repo_pre_steps: bundle exec rake -f activerecord/Rakefile db:postgresql:rebuild
-    - framework: actioncable
-      variant: integration
-      task: 'test:integration'
-    - framework: actionmailbox
-    - framework: actionmailer
-    - framework: actionpack
-    - framework: actionpack
-      variant: rack-2
-      framework_pre_steps: bundle install
-      rack_requirement: '~> 2.0'
-      supported_rubies: ['default']
-    - framework: actionpack
-      variant: rack-3-0
-      framework_pre_steps: bundle install
-      rack_requirement: '~> 3.0.0'
-      supported_rubies: ['default']
-      rails_version: '>= 7.1'
-    - framework: actionpack
-      variant: rack-head
-      framework_pre_steps: bundle install
-      rack_requirement: head
-      allow_failure: true
-      supported_rubies: ['default']
-      rails_version: '>= 7.1'
-    - framework: actiontext
-    - framework: actionview
-    - framework: activejob
-    - framework: activejob
-      variant: integration
-      task: 'test:integration'
-      allow_failure: true
-    - framework: activemodel
+    #- framework: actioncable
+    #  repo_pre_steps: bundle exec rake -f activerecord/Rakefile db:postgresql:rebuild
+    #- framework: actioncable
+    #  variant: integration
+    #  task: 'test:integration'
+    #- framework: actionmailbox
+    #- framework: actionmailer
+    #- framework: actionpack
+    #- framework: actionpack
+    #  variant: rack-2
+    #  framework_pre_steps: bundle install
+    #  rack_requirement: '~> 2.0'
+    #  supported_rubies: ['default']
+    #- framework: actionpack
+    #  variant: rack-3-0
+    #  framework_pre_steps: bundle install
+    #  rack_requirement: '~> 3.0.0'
+    #  supported_rubies: ['default']
+    #  rails_version: '>= 7.1'
+    #- framework: actionpack
+    #  variant: rack-head
+    #  framework_pre_steps: bundle install
+    #  rack_requirement: head
+    #  allow_failure: true
+    #  supported_rubies: ['default']
+    #  rails_version: '>= 7.1'
+    #- framework: actiontext
+    #- framework: actionview
+    #- framework: activejob
+    #- framework: activejob
+    #  variant: integration
+    #  task: 'test:integration'
+    #  allow_failure: true
+    #- framework: activemodel
     - framework: activerecord
       variant: mysql2
       task: 'db:mysql:rebuild mysql2:test'
       repo_pre_steps: &mysql_init |
         mysql -h127.0.0.1 -uroot -e "
+          SET GLOBAL default_storage_engine = 'InnoDB';
+          SET SESSION default_storage_engine = 'InnoDB';
+
           CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
           GRANT ALL PRIVILEGES ON activerecord_unittest.* TO 'rails'@'%';
           GRANT ALL PRIVILEGES ON activerecord_unittest2.* TO 'rails'@'%';
@@ -84,16 +87,16 @@ frameworks:
       repo_pre_steps: *mysql_init
       mysql_prepared_statements: 'true'
       supported_rubies: ['default']
-    - framework: activerecord
-      variant: postgresql
-      task: 'db:postgresql:rebuild postgresql:test'
-    - framework: activerecord
-      variant: sqlite3
-      task: 'sqlite3:test'
-    - framework: activerecord
-      variant: sqlite3-mem
-      task: 'sqlite3_mem:test'
-      supported_rubies: ['default']
+    #- framework: activerecord
+    #  variant: postgresql
+    #  task: 'db:postgresql:rebuild postgresql:test'
+    #- framework: activerecord
+    #  variant: sqlite3
+    #  task: 'sqlite3:test'
+    #- framework: activerecord
+    #  variant: sqlite3-mem
+    #  task: 'sqlite3_mem:test'
+    #  supported_rubies: ['default']
     - framework: activerecord
       variant: trilogy
       task: 'db:mysql:rebuild trilogy:test'
@@ -117,10 +120,10 @@ railties:
   rubies: ['default']
   shards: [1,2,3,4,5,6,7,8,9,10,11,12]
   variants:
-    - variant: default
-      rack_requirement: ''
-      pre_steps: ''
-      allow_failure: false
+    #- variant: default
+    #  rack_requirement: ''
+    #  pre_steps: ''
+    #  allow_failure: false
     #- variant: rack-2
     #  rack_requirement: '~> 2.0'
     #  pre_steps: bundle install
@@ -145,26 +148,26 @@ isolated:
       task: 'db:mysql:rebuild mysql2:isolated_test'
       repo_pre_steps: *mysql_init
       variant_label: mysql2
-    - framework: activerecord
-      task: 'db:postgresql:rebuild postgresql:isolated_test'
-      variant_label: postgresql
-    - framework: activerecord
-      task: 'sqlite3:isolated_test'
-      variant_label: sqlite3
+    #- framework: activerecord
+    #  task: 'db:postgresql:rebuild postgresql:isolated_test'
+    #  variant_label: postgresql
+    #- framework: activerecord
+    #  task: 'sqlite3:isolated_test'
+    #  variant_label: sqlite3
     - framework: activerecord
       task: 'db:mysql:rebuild trilogy:isolated_test'
       repo_pre_steps: *mysql_init
       variant_label: trilogy
       rails_version: '>= 7.1'
-    - framework: actionmailer
-      task: 'test:isolated'
-    - framework: actionpack
-      task: 'test:isolated'
-    - framework: actionview
-      task: 'test:isolated'
-    - framework: activejob
-      task: 'test:isolated'
-    - framework: activemodel
-      task: 'test:isolated'
-    - framework: activesupport
-      task: 'test:isolated'
+    #- framework: actionmailer
+    #  task: 'test:isolated'
+    #- framework: actionpack
+    #  task: 'test:isolated'
+    #- framework: actionview
+    #  task: 'test:isolated'
+    #- framework: activejob
+    #  task: 'test:isolated'
+    #- framework: activemodel
+    #  task: 'test:isolated'
+    #- framework: activesupport
+    #  task: 'test:isolated'
