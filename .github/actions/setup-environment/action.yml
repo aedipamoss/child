@@ -44,28 +44,28 @@ runs:
         fi
 
         if ! command -v gpg >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
-          apt-get update
-          apt-get install -y --no-install-recommends curl gnupg
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends curl gnupg
         fi
 
-        mkdir -p /etc/apt/keyrings
+        sudo install -d -m 0755 /etc/apt/keyrings
 
         curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-          gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ ${codename}-pgdg main" > \
-          /etc/apt/sources.list.d/pgdg.list
+          sudo gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ ${codename}-pgdg main" | \
+          sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
 
         curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | \
-          gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+          sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
         echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | \
-          tee /etc/apt/sources.list.d/nodesource.list >/dev/null
+          sudo tee /etc/apt/sources.list.d/nodesource.list >/dev/null
 
         curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | \
-          gpg --dearmor -o /etc/apt/keyrings/yarn.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] http://dl.yarnpkg.com/debian/ stable main" > \
-          /etc/apt/sources.list.d/yarn.list
+          sudo gpg --dearmor -o /etc/apt/keyrings/yarn.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] http://dl.yarnpkg.com/debian/ stable main" | \
+          sudo tee /etc/apt/sources.list.d/yarn.list >/dev/null
 
-        apt-get update
+        sudo apt-get update
 
         build_deps=(
           autoconf
@@ -135,10 +135,10 @@ runs:
           poppler-utils
         )
 
-        apt-get install -y --no-install-recommends "${build_deps[@]}" "${app_deps[@]}"
+        sudo apt-get install -y --no-install-recommends "${build_deps[@]}" "${app_deps[@]}"
 
-        apt-get clean
-        rm -rf /var/lib/apt/lists/* /tmp/*
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/* /tmp/*
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby-version }}
