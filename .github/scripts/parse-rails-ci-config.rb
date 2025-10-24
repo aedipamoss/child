@@ -331,6 +331,7 @@ framework_entries = frameworks_section.fetch('entries').flat_map do |entry|
   end
 end
 
+=begin
 railties_section = config.fetch('railties')
 railties_default_requirement = railties_section.delete('rails_version')
 railties_default_tokens = Array(railties_section['rubies'])
@@ -364,6 +365,7 @@ railties_entries = railties_section.fetch('variants').flat_map do |variant|
     end
   end
 end
+=end
 
 isolated_section = config.fetch('isolated')
 isolated_default_requirement = isolated_section.delete('rails_version')
@@ -394,7 +396,7 @@ end
 outputs = {
   'lint-matrix' => { 'include' => lint_entries },
   'frameworks-matrix' => { 'include' => framework_entries },
-  'railties-matrix' => { 'include' => railties_entries },
+  #'railties-matrix' => { 'include' => railties_entries },
   'isolated-matrix' => { 'include' => isolated_entries },
   'ruby-default' => default_ruby,
   'ruby-supported' => ruby_catalog[:supported]
