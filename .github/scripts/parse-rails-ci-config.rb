@@ -41,18 +41,17 @@ def mysql_service(image: nil)
       'MYSQL_ROOT_HOST' => '%'
     },
     'ports' => ['3306:3306'],
-    command: [
-      "mysqld",
-      "--default-storage-engine=InnoDB",
-      "--skip-log-bin",
-      "--character-set-server=utf8mb4",
-      "--collation-server=utf8mb4_unicode_ci"
-    ],
     'options' => [
       "--health-cmd=\"#{mysql_health_command(selected_image)}\"",
       '--health-interval=10s',
       '--health-timeout=5s',
       '--health-retries=5',
+      '--',
+      'mysqld',
+      '--default-storage-engine=InnoDB',
+      '--skip-log-bin',
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci',
     ].join(' ')
   }
 end
