@@ -67,6 +67,7 @@ runs:
             (
               set -eo pipefail
               cd "$workspace"
+              echo "::group::Repository Pre-Steps"
               bash -lc "${RUN_TASK_REPO_PRE_STEPS}"
             )
           fi
