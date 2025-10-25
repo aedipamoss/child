@@ -35,4 +35,4 @@ runs:
       run: |
         set -eo pipefail
         bundle config set path /vendor/bundle
-        rm Gemfile.lock && bundle install --jobs 4 --retry 3
+        bundle install --jobs 4 --retry 3
