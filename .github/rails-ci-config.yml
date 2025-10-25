@@ -53,17 +53,17 @@ frameworks:
     #  task: 'test:integration'
     #  allow_failure: true
     #- framework: activemodel
-    #- framework: activerecord
-    #  variant: mysql2
-    #  task: 'db:mysql:rebuild mysql2:test'
-    #  repo_pre_steps: &mysql_init |
-    #    mysql -hmysql -uroot -e "
-    #      CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
-    #      GRANT ALL PRIVILEGES ON activerecord_unittest.* TO 'rails'@'%';
-    #      GRANT ALL PRIVILEGES ON activerecord_unittest2.* TO 'rails'@'%';
-    #      CREATE DATABASE IF NOT EXISTS activerecord_unittest DEFAULT CHARACTER SET utf8mb4;
-    #      CREATE DATABASE IF NOT EXISTS activerecord_unittest2 DEFAULT CHARACTER SET utf8mb4;
-    #    "
+    - framework: activerecord
+      variant: mysql2
+      task: 'db:mysql:rebuild mysql2:test'
+      repo_pre_steps: &mysql_init |
+        mysql -hmysql -uroot -e "
+          CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
+          GRANT ALL PRIVILEGES ON activerecord_unittest.* TO 'rails'@'%';
+          GRANT ALL PRIVILEGES ON activerecord_unittest2.* TO 'rails'@'%';
+          CREATE DATABASE IF NOT EXISTS activerecord_unittest DEFAULT CHARACTER SET utf8mb4;
+          CREATE DATABASE IF NOT EXISTS activerecord_unittest2 DEFAULT CHARACTER SET utf8mb4;
+        "
     #- framework: activerecord
     #  variant: mysql2-mariadb
     #  task: 'db:mysql:rebuild mysql2:test'
@@ -131,22 +131,22 @@ railties:
     #  allow_failure: false
     #  supported_rubies: ['default']
     #  rails_version: '>= 7.1'
-    - variant: rack-head
-      rack_requirement: head
-      repo_pre_steps: "rm Gemfile.lock && bundle install"
-      allow_failure: true
-      supported_rubies: ['default']
-      rails_version: '>= 7.1'
+    #- variant: rack-head
+    #  rack_requirement: head
+    #  repo_pre_steps: "rm Gemfile.lock && bundle install"
+    #  allow_failure: true
+    #  supported_rubies: ['default']
+    #  rails_version: '>= 7.1'
 isolated:
   rubies: ['default']
   suites: []
-    #- framework: activerecord
-    #  task: 'db:mysql:rebuild mysql2:isolated_test'
-    #  repo_pre_steps: *mysql_init
-    #  variant_label: mysql2
-    #- framework: activerecord
-    #  task: 'db:postgresql:rebuild postgresql:isolated_test'
-    #  variant_label: postgresql
+    - framework: activerecord
+      task: 'db:mysql:rebuild mysql2:isolated_test'
+      repo_pre_steps: *mysql_init
+      variant_label: mysql2
+    - framework: activerecord
+      task: 'db:postgresql:rebuild postgresql:isolated_test'
+      variant_label: postgresql
     #- framework: activerecord
     #  task: 'sqlite3:isolated_test'
     #  variant_label: sqlite3
@@ -165,9 +165,9 @@ isolated:
     #  task: 'test:isolated'
     #- framework: activemodel
     #  task: 'test:isolated'
-    #- framework: activesupport
-    #  task: 'test:isolated'
-    #  services:
-    #    memcached:
-    #      image: memcached:1.6-alpine
-    #      ports: ['11211:11211']
+    - framework: activesupport
+      task: 'test:isolated'
+      services:
+        memcached:
+          image: memcached:1.6-alpine
+          ports: ['11211:11211']
