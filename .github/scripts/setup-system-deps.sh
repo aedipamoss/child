@@ -16,27 +16,27 @@ if [ -z "${codename}" ]; then
   exit 1
 fi
 
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends curl gnupg ca-certificates
+apt-get update
+apt-get install -y --no-install-recommends curl gnupg ca-certificates
 
-sudo install -d -m 0755 /etc/apt/keyrings
+install -d -m 0755 /etc/apt/keyrings
 
 curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
+  gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
 echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ ${codename}-pgdg main" | \
-  sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+  tee /etc/apt/sources.list.d/pgdg.list >/dev/null
 
 curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+  gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | \
-  sudo tee /etc/apt/sources.list.d/nodesource.list >/dev/null
+  tee /etc/apt/sources.list.d/nodesource.list >/dev/null
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/yarn.gpg
+  gpg --dearmor -o /etc/apt/keyrings/yarn.gpg
 echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] http://dl.yarnpkg.com/debian/ stable main" | \
-  sudo tee /etc/apt/sources.list.d/yarn.list >/dev/null
+  tee /etc/apt/sources.list.d/yarn.list >/dev/null
 
-sudo apt-get update
+apt-get update
 
 build_deps=(
   autoconf
@@ -97,6 +97,6 @@ app_deps=(
   nodejs=18.19.0-1nodesource1 yarn lsof ffmpeg mupdf mupdf-tools poppler-utils
 )
 
-sudo apt-get install -y --no-install-recommends "${build_deps[@]}" "${app_deps[@]}"
-sudo apt-get clean
-sudo rm -rf /var/lib/apt/lists/* /tmp/*
+apt-get install -y --no-install-recommends "${build_deps[@]}" "${app_deps[@]}"
+apt-get clean
+rm -rf /var/lib/apt/lists/* /tmp/*
