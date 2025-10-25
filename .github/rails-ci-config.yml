@@ -40,7 +40,7 @@ frameworks:
     #  rails_version: '>= 7.1'
     - framework: actionpack
       variant: rack-head
-      framework_pre_steps: "rm Gemfile.lock && bundle install"
+      pre_steps: "rm Gemfile.lock && bundle install"
       rack_requirement: head
       allow_failure: true
       supported_rubies: ['default']
@@ -132,7 +132,7 @@ railties:
     #  rails_version: '>= 7.1'
     - variant: rack-head
       rack_requirement: head
-      framework_pre_steps: bundle install
+      pre_steps: "rm Gemfile.lock && bundle install"
       allow_failure: true
       supported_rubies: ['default']
       rails_version: '>= 7.1'

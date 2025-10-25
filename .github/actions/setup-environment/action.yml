@@ -24,7 +24,7 @@ runs:
       if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
       uses: actions/cache@v4
       with:
-        path: /vendor/bundle
+        path: /usr/local/bundle
         key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles(format('{0}/**/Gemfile.lock', github.workspace)) }}
         restore-keys: |
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-
@@ -34,7 +34,6 @@ runs:
       shell: bash
       run: |
         set -eo pipefail
-        bundle config set path /vendor/bundle
         bundle install --jobs 4 --retry 3
     - name: bundle env
       shell: bash
