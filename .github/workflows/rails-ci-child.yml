@@ -209,6 +209,11 @@ jobs:
           repo-pre-steps: ${{ matrix.repo_pre_steps }}
           pre-steps: ${{ matrix.pre_steps }}
           rack-requirement: ${{ matrix.rack_requirement }}
+      - name: Debug
+        run: |
+          ls -alh $PWD
+          ls -alh ..
+          ls -alh ../..
 
   isolated:
     needs: load-config
