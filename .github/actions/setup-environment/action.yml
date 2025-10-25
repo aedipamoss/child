@@ -1,6 +1,9 @@
 name: Setup Rails CI environment
 description: Install optional system dependencies, configure Ruby, and install gems.
 inputs:
+  ruby-version:
+    description: Ruby version to install.
+    required: true
   bundler-cache:
     description: Whether to enable Bundler caching.
     required: false
@@ -18,7 +21,7 @@ runs:
   steps:
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: none
+        ruby-version: ${{ inputs.ruby-version }}
         bundler-cache: ${{ inputs.bundler-cache }}
     - if: ${{ inputs.bundle-install != 'false' }}
       shell: bash
