@@ -31,7 +31,7 @@ inputs:
   retry-count:
     description: Number of attempts to run the command before failing.
     required: false
-    default: '0'
+    default: '3'
 runs:
   using: composite
   steps:
@@ -121,6 +121,23 @@ runs:
           bash -lc "${RUN_TASK_COMMAND}"
         }
 
-        run_task
+        attempt=1
+        while true; do
+          echo "Running attempt ${attempt}/${RUN_TASK_RETRY_COUNT}"
+          if run_task; then
+            break
+          else
+            status=$?
+          fi
+
+          if [ "$attempt" -ge "$RUN_TASK_RETRY_COUNT" ]; then
+            echo "::error::Command failed after ${RUN_TASK_RETRY_COUNT} attempt(s)"
+            exit "$status"
+          fi
+
+          echo "::warning::Attempt ${attempt} failed with exit code ${status}. Retrying..."
+          attempt=$((attempt + 1))
+          sleep 5
+        done
 
         echo "Task completed successfully"
