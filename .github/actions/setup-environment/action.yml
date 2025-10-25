@@ -23,6 +23,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Setup /workdir
+      run: |
+        mkdir -p /workdir
+        chown -R $(id -u):$(id -g) /workdir
+        cp -R $GITHUB_WORKSPACE/. /workdir/
+
     - name: Cache bundle
       id: bundle-cache
       if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
