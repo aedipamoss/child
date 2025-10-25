@@ -12,30 +12,31 @@ inputs:
     description: Run "bundle install" after setting up Ruby.
     required: false
     default: 'true'
-  bundle-working-directory:
-    description: Directory in which to run "bundle install".
-    required: false
-    default: '/workdir'
   branch-name:
     description: Branch name to use for cache key.
     required: false
     default: 'main'
+  workdir:
+    description: Directory to initiate commands.
+    required: false
+    default: '/workdir'
 runs:
   using: composite
   steps:
     - name: Setup /workdir
+      shell: bash
       run: |
-        mkdir -p /workdir
-        chown -R $(id -u):$(id -g) /workdir
-        cp -R $GITHUB_WORKSPACE/. /workdir/
+        mkdir -p ${{ inputs.workdir }}
+        chown -R $(id -u):$(id -g) ${{ inputs.workdir }}
+        cp -R $GITHUB_WORKSPACE/. ${{ inputs.workdir }}
 
     - name: Cache bundle
       id: bundle-cache
       if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
       uses: actions/cache@v4
       with:
-        path: ${{ inputs.bundle-working-directory }}/vendor/bundle
-        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles(format('{0}/**/Gemfile.lock', inputs.bundle-working-directory)) }}
+        path: ${{ inputs.workdir }}/vendor/bundle
+        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles(format('{0}/**/Gemfile.lock', inputs.workdir)) }}
         restore-keys: |
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-
@@ -43,7 +44,7 @@ runs:
     - name: Install Bundler and gems
       if: ${{ inputs.bundle-install == 'true' }}
       shell: bash
-      working-directory: ${{ inputs.bundle-working-directory }}
+      working-directory: ${{ inputs.workdir }}
       run: |
         set -eo pipefail
         gem install bundler --conservative
