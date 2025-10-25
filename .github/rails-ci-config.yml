@@ -139,7 +139,7 @@ railties:
     #  rails_version: '>= 7.1'
 isolated:
   rubies: ['default']
-  suites: []
+  suites:
     - framework: activerecord
       task: 'db:mysql:rebuild mysql2:isolated_test'
       repo_pre_steps: *mysql_init
