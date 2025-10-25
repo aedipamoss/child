@@ -114,7 +114,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-      workdir: /workdir
+      options:
+        workdir: /workdir
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
@@ -133,7 +134,7 @@ jobs:
         uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
           command: ${{ matrix.command }}
-          workdir: ${{ matrix.working_directory || '.' }}
+          working-directory: ${{ matrix.working_directory || '.' }}
 
   frameworks:
     needs: load-config
@@ -141,7 +142,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-      workdir: /workdir
+      options:
+        workdir: /workdir
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
@@ -180,7 +182,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-      workdir: /workdir
+      options:
+        workdir: /workdir
 
     env:
       # actions tty
