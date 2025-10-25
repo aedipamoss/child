@@ -114,6 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
+      working-directory: /workdir
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
@@ -140,6 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
+      working-directory: /workdir
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
@@ -178,6 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
+      working-directory: /workdir
 
     env:
       # actions tty
@@ -220,6 +223,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
+      working-directory: /workdir
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
