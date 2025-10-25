@@ -11,19 +11,17 @@ permissions:
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}/rails-ci
 
-x-ruby-versions: &ruby-versions
-  - 3.2
-  - 3.3
-  - 3.4
-  - head
-
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        ruby: *ruby-versions
+        ruby:
+          - 3.2
+          - 3.3
+          - 3.4
+          - head
 
     steps:
       - name: Checkout
