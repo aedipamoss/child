@@ -48,6 +48,8 @@ jobs:
               /usr/local/bin/setup-system-deps
 
           RUN gem install bundler
+
+          WORKDIR /workdir
           DOCKER
 
       - name: Build and push image
