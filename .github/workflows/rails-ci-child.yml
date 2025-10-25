@@ -25,7 +25,6 @@ permissions:
   actions: write
 
 env:
-  BUNDLE_WITHOUT: "development:production"
   BUNDLE_PATH: "/vendor/bundle"
   CI: "true"
   BUILDKITE: "true"
