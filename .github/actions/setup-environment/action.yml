@@ -16,38 +16,25 @@ inputs:
     description: Branch name to use for cache key.
     required: false
     default: 'main'
-  workdir:
-    description: Directory to initiate commands.
-    required: false
-    default: '/workdir'
 runs:
   using: composite
   steps:
-    - name: Setup /workdir
-      shell: bash
-      run: |
-        mkdir -p ${{ inputs.workdir }}
-        chown -R $(id -u):$(id -g) ${{ inputs.workdir }}
-        cp -R $GITHUB_WORKSPACE/. ${{ inputs.workdir }}
-
     - name: Cache bundle
       id: bundle-cache
       if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
       uses: actions/cache@v4
       with:
-        path: ${{ inputs.workdir }}/vendor/bundle
-        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles(format('{0}/**/Gemfile.lock', inputs.workdir)) }}
+        path: /vendor/bundle
+        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles(format('{0}/**/Gemfile.lock') }}
         restore-keys: |
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-
-
     - name: Install Bundler and gems
       if: ${{ inputs.bundle-install == 'true' }}
       shell: bash
-      working-directory: ${{ inputs.workdir }}
       run: |
         set -eo pipefail
         gem install bundler --conservative
-        bundle config set path vendor/bundle
+        bundle config set path /vendor/bundle
         rm Gemfile.lock
         bundle install --jobs 4 --retry 3

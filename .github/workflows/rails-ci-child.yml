@@ -163,7 +163,6 @@ jobs:
           MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
         timeout-minutes: 30
         uses: aedipamoss/child/.github/actions/run-suite-task@main
-
         with:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
           workdir: ${{ matrix.framework }}
