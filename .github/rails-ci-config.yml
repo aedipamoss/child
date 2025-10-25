@@ -29,18 +29,18 @@ frameworks:
     #- framework: actionpack
     #- framework: actionpack
     #  variant: rack-2
-    #  framework_pre_steps: bundle install
+    #  repo_pre_steps: bundle install
     #  rack_requirement: '~> 2.0'
     #  supported_rubies: ['default']
     #- framework: actionpack
     #  variant: rack-3-0
-    #  framework_pre_steps: bundle install
+    #  repo_pre_steps: bundle install
     #  rack_requirement: '~> 3.0.0'
     #  supported_rubies: ['default']
     #  rails_version: '>= 7.1'
     - framework: actionpack
       variant: rack-head
-      pre_steps: "rm Gemfile.lock && bundle install"
+      repo_pre_steps: "rm Gemfile.lock && bundle install"
       rack_requirement: head
       allow_failure: true
       supported_rubies: ['default']
@@ -132,7 +132,7 @@ railties:
     #  rails_version: '>= 7.1'
     - variant: rack-head
       rack_requirement: head
-      pre_steps: "rm Gemfile.lock && bundle install"
+      repo_pre_steps: "rm Gemfile.lock && bundle install"
       allow_failure: true
       supported_rubies: ['default']
       rails_version: '>= 7.1'
