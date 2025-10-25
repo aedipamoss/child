@@ -23,12 +23,12 @@ REDIS_DEFAULT_IMAGE = 'redis:alpine'
 
 def mysql_health_command(image)
   normalized = image.to_s
-  return 'mysql -h 127.0.0.1 -P 3306 -e \"SELECT 1;\"' if normalized.empty?
+  return 'mysql -h mysql -P 3306 -e \"SELECT 1;\"' if normalized.empty?
 
   if normalized.include?('mariadb')
     'healthcheck.sh --su-mysql --connect --innodb_initialized'
   else
-    'mysql -h 127.0.0.1 -P 3306 -e \"SELECT 1;\"'
+    'mysql -h mysql -P 3306 -e \"SELECT 1;\"'
   end
 end
 

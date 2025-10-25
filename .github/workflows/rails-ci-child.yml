@@ -28,27 +28,27 @@ env:
   BUNDLE_WITHOUT: "development:production"
   CI: "true"
   BUILDKITE: "true"
-  BEANSTALK_URL: beanstalk://127.0.0.1:11300
-  MEMCACHE_SERVERS: 127.0.0.1:11211
-  MYSQL_HOST: 127.0.0.1
+  BEANSTALK_URL: beanstalk://beanstalkd:11300
+  MEMCACHE_SERVERS: memcached:11211
+  MYSQL_HOST: mysql
   MYSQL_PORT: 3306
   MYSQL_USERNAME: root
   MYSQL_PASSWORD: ""
   MYSQL_SOCKET: ""
   MYSQL_PREPARED_STATEMENTS: ""
-  PGHOST: 127.0.0.1
+  PGHOST: postgres
   PGPORT: 5432
   PGUSER: postgres
   PGDATABASE: postgres
-  POSTGRES_HOST: 127.0.0.1
+  POSTGRES_HOST: postgres
   POSTGRES_PORT: 5432
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: ""
-  QC_DATABASE_URL: postgres://postgres@127.0.0.1:5432/active_jobs_qc_int_test
-  QUE_DATABASE_URL: postgres://postgres@127.0.0.1:5432/active_jobs_que_int_test
-  RABBITMQ_URL: amqp://guest:guest@127.0.0.1:5672
-  REDIS_URL: redis://127.0.0.1:6379/1
-  SELENIUM_DRIVER_URL: http://127.0.0.1:4444/wd/hub
+  QC_DATABASE_URL: postgres://postgres@postgres:5432/active_jobs_qc_int_test
+  QUE_DATABASE_URL: postgres://postgres@postgres:5432/active_jobs_que_int_test
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+  REDIS_URL: redis://redis:6379/1
+  SELENIUM_DRIVER_URL: http://chrome:4444/wd/hub
 
   # actions tty
   FORCE_COLOR: "1"
@@ -127,6 +127,7 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
       - name: Run lint command
         uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
@@ -153,6 +154,7 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
       - name: Run framework task
         env:
           SUITE_REPO_PRE_STEPS: ${{ matrix.repo_pre_steps }}
@@ -197,6 +199,7 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
       - name: Run Railties shard
         env:
           PRE_STEPS: ${{ matrix.pre_steps }}
@@ -231,6 +234,7 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
       - name: Run isolated task
         timeout-minutes: 30
         uses: aedipamoss/child/.github/actions/run-suite-task@main

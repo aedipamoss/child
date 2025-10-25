@@ -16,6 +16,10 @@ inputs:
     description: Directory in which to run "bundle install".
     required: false
     default: '.'
+  branch-name:
+    description: Branch name to use for cache key.
+    required: false
+    default: 'main'
 runs:
   using: composite
   steps:
