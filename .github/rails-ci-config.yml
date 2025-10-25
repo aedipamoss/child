@@ -15,7 +15,7 @@ frameworks:
   defaults:
     allow_failure: false
     repo_pre_steps: ''
-    framework_pre_steps: ''
+    pre_steps: ''
     rack_requirement: ''
     variant: ''
   entries:
@@ -117,6 +117,7 @@ railties:
   variants:
     - variant: default
       rack_requirement: ''
+      repo_pre_steps: ''
       pre_steps: ''
       allow_failure: false
     #- variant: rack-2

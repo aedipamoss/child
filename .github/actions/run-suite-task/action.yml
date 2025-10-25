@@ -12,10 +12,6 @@ inputs:
     description: Commands to run from the repository root before changing into the working directory.
     required: false
     default: ''
-  framework-pre-steps:
-    description: Commands to run inside the working directory before the main command.
-    required: false
-    default: ''
   pre-steps:
     description: Additional commands to run after framework-pre-steps but before the main command.
     required: false
@@ -41,7 +37,6 @@ runs:
         RUN_TASK_COMMAND: ${{ inputs.command }}
         RUN_TASK_WORK_DIR: ${{ inputs['workdir'] }}
         RUN_TASK_REPO_PRE_STEPS: ${{ inputs['repo-pre-steps'] }}
-        RUN_TASK_FRAMEWORK_PRE_STEPS: ${{ inputs['framework-pre-steps'] }}
         RUN_TASK_PRE_STEPS: ${{ inputs['pre-steps'] }}
         RUN_TASK_RACK_REQUIREMENT: ${{ inputs['rack-requirement'] }}
         RUN_TASK_INSTALL_NODE: ${{ inputs['install-node-dependencies'] }}
@@ -80,6 +75,7 @@ runs:
               cd "$workspace"
               echo "::group::Repository Pre-Steps"
               bash -lc "${RUN_TASK_REPO_PRE_STEPS}"
+              echo "::endgroup::"
             )
           fi
 
@@ -95,18 +91,15 @@ runs:
 
           cd "$workdir"
 
-          if [ -n "${RUN_TASK_FRAMEWORK_PRE_STEPS}" ] && [ "${RUN_TASK_FRAMEWORK_PRE_STEPS}" != "null" ]; then
-            echo "::group::Framework Pre-Steps"
-            bash -lc "${RUN_TASK_FRAMEWORK_PRE_STEPS}"
-          fi
-
           if [ -n "${RUN_TASK_PRE_STEPS}" ] && [ "${RUN_TASK_PRE_STEPS}" != "null" ]; then
             echo "::group::Task Pre-Steps"
             bash -lc "${RUN_TASK_PRE_STEPS}"
+            echo "::endgroup::"
           fi
 
           install_node="$(printf '%s' "${RUN_TASK_INSTALL_NODE}" | tr '[:upper:]' '[:lower:]')"
           if [ "$install_node" = "true" ]; then
+            echo "::group::Install Node.js dependencies"
             if [ -f package.json ]; then
               if [ -f yarn.lock ]; then
                 yarn install --frozen-lockfile
@@ -117,10 +110,12 @@ runs:
             elif [ -f ../actionview/package.json ]; then
               (cd ../actionview && npm install)
             fi
+            echo "::endgroup::"
           fi
 
           echo "::group::Run Task"
           bash -lc "${RUN_TASK_COMMAND}"
+          echo "::endgroup::"
         }
 
         attempt=1

@@ -33,8 +33,13 @@ runs:
       if: ${{ inputs.bundle-install == 'true' }}
       shell: bash
       run: |
+        echo "::group::bundle install"
         set -eo pipefail
         bundle install --jobs 4 --retry 3
+        echo "::endgroup::"
     - name: bundle env
       shell: bash
-      run: bundle env
+      run: |
+        echo "::group::bundle env"
+        bundle env
+        echo "::endgroup::"

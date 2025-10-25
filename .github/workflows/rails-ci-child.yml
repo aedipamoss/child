@@ -156,8 +156,6 @@ jobs:
           branch-name: ${{ github.ref_name }}
       - name: Run framework task
         env:
-          SUITE_REPO_PRE_STEPS: ${{ matrix.repo_pre_steps }}
-          SUITE_FRAMEWORK_PRE_STEPS: ${{ matrix.framework_pre_steps }}
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
           MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
         timeout-minutes: 30
@@ -166,7 +164,7 @@ jobs:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
           workdir: ${{ matrix.framework }}
           repo-pre-steps: ${{ matrix.repo_pre_steps }}
-          framework-pre-steps: ${{ matrix.framework_pre_steps }}
+          pre-steps: ${{ matrix.pre_steps }}
           rack-requirement: ${{ matrix.rack_requirement }}
           install-node-dependencies: 'true'
 
@@ -200,7 +198,6 @@ jobs:
           branch-name: ${{ github.ref_name }}
       - name: Run Railties shard
         env:
-          PRE_STEPS: ${{ matrix.pre_steps }}
           RAILS_SHARD: ${{ matrix.shard }}
           BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
           BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
@@ -209,6 +206,7 @@ jobs:
         with:
           command: script -q -e -c "bundle exec rake test"
           workdir: railties
+          repo-pre-steps: ${{ matrix.repo_pre_steps }}
           pre-steps: ${{ matrix.pre_steps }}
           rack-requirement: ${{ matrix.rack_requirement }}
 
