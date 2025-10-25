@@ -25,7 +25,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: /usr/local/bundle
-        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles('**/Gemfile.lock') }}
+        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles('Gemfile.lock') }}
         restore-keys: |
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-
           bundle-${{ runner.os }}-${{ inputs.ruby-version }}-
