@@ -117,7 +117,7 @@ jobs:
     defaults:
       run:
         shell: /bin/bash -e {0}
-        working-directory: ${{github.workspace}}
+        working-directory: /
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
@@ -147,7 +147,7 @@ jobs:
     defaults:
       run:
         shell: /bin/bash -e {0}
-        working-directory: ${{github.workspace}}
+        working-directory: /
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
@@ -174,7 +174,7 @@ jobs:
 
         with:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
-          working-directory: ${{ matrix.framework }}
+          working-directory: /
           repo-pre-steps: ${{ matrix.repo_pre_steps }}
           framework-pre-steps: ${{ matrix.framework_pre_steps }}
           rack-requirement: ${{ matrix.rack_requirement }}
@@ -189,7 +189,7 @@ jobs:
     defaults:
       run:
         shell: /bin/bash -e {0}
-        working-directory: ${{github.workspace}}
+        working-directory: /
 
     env:
       # actions tty
@@ -235,7 +235,7 @@ jobs:
     defaults:
       run:
         shell: /bin/bash -e {0}
-        working-directory: ${{github.workspace}}
+        working-directory: /
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
