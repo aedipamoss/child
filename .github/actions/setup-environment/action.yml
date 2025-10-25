@@ -15,7 +15,7 @@ inputs:
   bundle-working-directory:
     description: Directory in which to run "bundle install".
     required: false
-    default: '.'
+    default: '/workdir'
   branch-name:
     description: Branch name to use for cache key.
     required: false

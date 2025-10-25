@@ -62,6 +62,8 @@ runs:
         run_task() {
           set -eo pipefail
 
+          cd /workdir
+
           workspace="${GITHUB_WORKSPACE:-}"
           if [ -z "$workspace" ]; then
             echo "::error::GITHUB_WORKSPACE is not set" >&2

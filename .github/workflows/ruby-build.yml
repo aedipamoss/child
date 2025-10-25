@@ -49,7 +49,7 @@ jobs:
 
           RUN gem install bundler
 
-          WORKDIR /workdir
+          RUN mkdir -p /workdir
           DOCKER
 
       - name: Build and push image

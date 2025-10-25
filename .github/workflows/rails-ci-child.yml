@@ -122,6 +122,7 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
+          path: /workdir
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
@@ -149,6 +150,7 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
+          path: /workdir
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
@@ -194,6 +196,7 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
+          path: /workdir
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
@@ -229,6 +232,7 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
+          path: /workdir
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
