@@ -125,8 +125,6 @@ jobs:
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
       - name: Run lint command
         uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
@@ -151,8 +149,6 @@ jobs:
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
       - name: Run framework task
         env:
           SUITE_REPO_PRE_STEPS: ${{ matrix.repo_pre_steps }}
@@ -195,8 +191,6 @@ jobs:
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
       - name: Run Railties shard
         env:
           PRE_STEPS: ${{ matrix.pre_steps }}
@@ -229,8 +223,6 @@ jobs:
           repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
       - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
       - name: Run isolated task
         timeout-minutes: 30
         uses: aedipamoss/child/.github/actions/run-suite-task@main
