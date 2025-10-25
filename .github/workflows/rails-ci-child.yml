@@ -26,6 +26,8 @@ permissions:
 
 env:
   BUNDLE_WITHOUT: "development:production"
+  BUNDLE_FROZEN: "true"
+  BUNDLE_PATH: "/vendor/bundle"
   CI: "true"
   BUILDKITE: "true"
   BEANSTALK_URL: beanstalk://beanstalkd:11300
