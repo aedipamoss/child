@@ -5,7 +5,7 @@ lint:
       command: bundle exec rubocop --parallel
     - task: Guides Lint
       command: bundle exec rake guides:lint
-      working_directory: guides
+      workdir: guides
     - task: Changelogs
       command: bundle exec tools/railspect changelogs .
     - task: Configuration

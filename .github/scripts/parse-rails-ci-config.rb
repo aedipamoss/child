@@ -284,8 +284,8 @@ lint_entries = lint_section.fetch('tasks').flat_map do |task|
       'allow_failure' => soft_fail
     }
 
-    if task_hash.key?('working_directory') && !task_hash['working_directory'].to_s.empty?
-      data['working_directory'] = task_hash['working_directory']
+    if task_hash.key?('workdir') && !task_hash['workdir'].to_s.empty?
+      data['workdir'] = task_hash['workdir']
     end
 
     data

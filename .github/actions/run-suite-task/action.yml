@@ -4,7 +4,7 @@ inputs:
   command:
     description: Command to run for the task.
     required: true
-  working-directory:
+  workdir:
     description: Working directory relative to the repository root.
     required: false
     default: '.'
@@ -39,7 +39,7 @@ runs:
       shell: bash
       env:
         RUN_TASK_COMMAND: ${{ inputs.command }}
-        RUN_TASK_WORKING_DIRECTORY: ${{ inputs['working-directory'] }}
+        RUN_TASK_WORK_DIR: ${{ inputs['workdir'] }}
         RUN_TASK_REPO_PRE_STEPS: ${{ inputs['repo-pre-steps'] }}
         RUN_TASK_FRAMEWORK_PRE_STEPS: ${{ inputs['framework-pre-steps'] }}
         RUN_TASK_PRE_STEPS: ${{ inputs['pre-steps'] }}
