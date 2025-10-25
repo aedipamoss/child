@@ -68,6 +68,12 @@ runs:
             return 1
           fi
 
+          if [ -n "${RUN_TASK_RACK_REQUIREMENT}" ] && [ "${RUN_TASK_RACK_REQUIREMENT}" != "null" ]; then
+            export RACK="${RUN_TASK_RACK_REQUIREMENT}"
+          else
+            unset RACK || true
+          fi
+
           if [ -n "${RUN_TASK_REPO_PRE_STEPS}" ] && [ "${RUN_TASK_REPO_PRE_STEPS}" != "null" ]; then
             (
               set -eo pipefail
@@ -85,12 +91,6 @@ runs:
           if [ ! -d "$workdir" ]; then
             echo "::error::Working directory '$workdir' does not exist" >&2
             return 1
-          fi
-
-          if [ -n "${RUN_TASK_RACK_REQUIREMENT}" ] && [ "${RUN_TASK_RACK_REQUIREMENT}" != "null" ]; then
-            export RACK="${RUN_TASK_RACK_REQUIREMENT}"
-          else
-            unset RACK || true
           fi
 
           cd "$workdir"
