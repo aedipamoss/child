@@ -7,7 +7,7 @@ inputs:
   bundler-cache:
     description: Whether to enable Bundler caching.
     required: false
-    default: 'false'
+    default: 'true'
   bundle-install:
     description: Run "bundle install" after setting up Ruby.
     required: false
@@ -19,11 +19,23 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: ruby/setup-ruby@v1
+    - name: Cache bundle
+      id: bundle-cache
+      if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
+      uses: actions/cache@v4
       with:
-        ruby-version: ${{ inputs.ruby-version }}
-        bundler-cache: ${{ inputs.bundler-cache }}
-    - if: ${{ inputs.bundle-install != 'false' }}
+        path: ${{ inputs.bundle-working-directory }}/vendor/bundle
+        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles(format('{0}/**/Gemfile.lock', inputs.bundle-working-directory)) }}
+        restore-keys: |
+          bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-
+          bundle-${{ runner.os }}-${{ inputs.ruby-version }}-
+
+    - name: Install Bundler and gems
+      if: ${{ inputs.bundle-install == 'true' }}
       shell: bash
       working-directory: ${{ inputs.bundle-working-directory }}
-      run: bundle install --jobs 4 --retry 3
+      run: |
+        set -eo pipefail
+        gem install bundler --conservative
+        bundle config set path vendor/bundle
+        bundle install --jobs 4 --retry 3
