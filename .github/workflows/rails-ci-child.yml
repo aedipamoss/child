@@ -112,6 +112,8 @@ jobs:
     needs: load-config
     name: Lint (${{ matrix.task }}) on Ruby ${{ matrix.ruby }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
@@ -135,6 +137,8 @@ jobs:
     needs: load-config
     name: ${{ matrix.display_name }} (${{ matrix.ruby }})${{ matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
@@ -149,7 +153,6 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
-          install-system-dependencies: "true"
       - name: Run framework task
         env:
           SUITE_REPO_PRE_STEPS: ${{ matrix.repo_pre_steps }}
@@ -171,6 +174,8 @@ jobs:
     needs: load-config
     name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
 
     env:
       # actions tty
@@ -192,7 +197,6 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
-          install-system-dependencies: "true"
       - name: Run Railties shard
         env:
           PRE_STEPS: ${{ matrix.pre_steps }}
@@ -211,6 +215,8 @@ jobs:
     needs: load-config
     name: "${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
     services: ${{ fromJson(matrix.services) }}
     strategy:
@@ -225,7 +231,6 @@ jobs:
       - uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
-          install-system-dependencies: "true"
       - name: Run isolated task
         timeout-minutes: 30
         uses: aedipamoss/child/.github/actions/run-suite-task@main
