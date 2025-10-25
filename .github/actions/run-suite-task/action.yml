@@ -78,8 +78,8 @@ runs:
           fi
 
           workdir="$workspace"
-          if [ -n "${RUN_TASK_WORKING_DIRECTORY}" ] && [ "${RUN_TASK_WORKING_DIRECTORY}" != "." ]; then
-            workdir="$workspace/${RUN_TASK_WORKING_DIRECTORY}"
+          if [ -n "${RUN_TASK_WORK_DIR}" ] && [ "${RUN_TASK_WORK_DIR}" != "." ]; then
+            workdir="$workspace/${RUN_TASK_WORK_DIR}"
           fi
 
           if [ ! -d "$workdir" ]; then
