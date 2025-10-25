@@ -1,0 +1,67 @@
+name: Build and publish Ruby images
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/rails-ci
+
+x-ruby-versions: &ruby-versions
+  - 3.2
+  - 3.3
+  - 3.4
+  - head
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: *ruby-versions
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Dockerfile
+        run: |
+          cat > Dockerfile <<'DOCKER'
+          ARG RUBY_VERSION
+          FROM ruby:${RUBY_VERSION}-slim
+
+          COPY .github/scripts/setup-system-deps.sh /usr/local/bin/setup-system-deps
+          RUN chmod +x /usr/local/bin/setup-system-deps && \
+              /usr/local/bin/setup-system-deps
+
+          RUN gem install bundler
+          DOCKER
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            RUBY_VERSION=${{ matrix.ruby }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ matrix.ruby }}
+            ${{ env.IMAGE_NAME }}:${{ matrix.ruby }}-${{ github.run_number }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.ruby }}
+          cache-to: type=inline
+
