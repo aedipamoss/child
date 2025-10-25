@@ -174,7 +174,7 @@ jobs:
 
         with:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
-          working-directory: /
+          working-directory: ${{ matrix.framework }}
           repo-pre-steps: ${{ matrix.repo_pre_steps }}
           framework-pre-steps: ${{ matrix.framework_pre_steps }}
           rack-requirement: ${{ matrix.rack_requirement }}
