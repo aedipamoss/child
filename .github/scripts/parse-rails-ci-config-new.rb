@@ -288,8 +288,8 @@ end
 
 output = {
   "frameworks" => frameworks,
-  "ruby-supported" => ruby_catalog[:supported],
-  "ruby-default" => ruby_catalog[:default]
+  #"ruby-supported" => ruby_catalog[:supported],
+  #"ruby-default" => ruby_catalog[:default]
 }
 
 output_path = ENV['GITHUB_OUTPUT']

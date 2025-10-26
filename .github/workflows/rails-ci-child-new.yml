@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       frameworks: ${{ steps.extract.outputs.frameworks }}
-      ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
-      ruby-default: ${{ steps.extract.outputs.ruby-default }}
+      #ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
+      #ruby-default: ${{ steps.extract.outputs.ruby-default }}
     steps:
       - name: Checkout CI utilities
         uses: actions/checkout@v4
@@ -45,11 +45,19 @@ jobs:
           ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
             "${{ github.workspace }}/source"
-          cat $GITHUB_OUTPUT
 
-      - name: Output debug info
+  debug:
+    name: Debug Loaded Config
+    needs: load-config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output frameworks config
         run: |
-          echo "outputs: ${{ fromJson(steps.extract.outputs) }}"
+          echo "Frameworks config:"
+          echo '${{ needs.load-config.outputs.frameworks }}'
+          echo "All outputs:"
+          echo '${{ toJson(needs.load-config.outputs) }}'
+
 
   actionpack:
     name: Action Pack
