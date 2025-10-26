@@ -7,18 +7,18 @@ frameworks:
           repo_pre_steps: bundle install
           allow_failure: false
           rubies: default
-        #- label: rack-3-0
-        #  rack_requirement: '~> 3.0.0'
-        #  repo_pre_steps: bundle install
-        #  allow_failure: false
-        #  rubies: default
-        #  rails_version: '>= 7.1'
-        #- label: rack-head
-        #  rack_requirement: head
-        #  repo_pre_steps: "rm Gemfile.lock && bundle install"
-        #  allow_failure: true
-        #  rubies: default
-        #  rails_version: '>= 7.1'
+        - label: rack-3-0
+          rack_requirement: '~> 3.0.0'
+          repo_pre_steps: bundle install
+          allow_failure: false
+          rubies: default
+          rails_version: '>= 7.1'
+        - label: rack-head
+          rack_requirement: head
+          repo_pre_steps: "rm Gemfile.lock && bundle install"
+          allow_failure: true
+          rubies: default
+          rails_version: '>= 7.1'
 
     #- lib: activerecord
     #  variants:

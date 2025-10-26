@@ -273,7 +273,7 @@ def expand_variant(lib, variant, catalog)
       mysql_image: variant["mysql_image"].to_s,
       mysql_prepared_statements: variant["mysql_prepared_statements"].to_s,
       allow_failure: !!variant["allow_failure"] || catalog[:soft_fail_map][ruby_ver],
-      services: JSON.dump(common_services(mysql_image: variant["mysql_image"]))
+      services: JSON.dump(framework_services(mysql_image: variant["mysql_image"]))
     }
   end
 end
