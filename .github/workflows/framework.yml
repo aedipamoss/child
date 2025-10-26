@@ -69,6 +69,10 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           branch-name: ${{ github.ref_name }}
 
+      - name: debug prepared statements
+        run: |
+          echo "matrix.mysql_prepared_statements='${{ matrix.mysql_prepared_statements }}'"
+
       - name: Run framework task
         env:
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
