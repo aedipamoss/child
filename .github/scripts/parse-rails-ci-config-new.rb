@@ -262,19 +262,17 @@ def expand_variant(lib, variant, catalog)
 
   expand_ruby_tokens(variant["rubies"], catalog).map do |ruby_ver|
     {
-      matrix: {
-        display_name: "#{lib} (#{variant["label"]})",
-        framework: lib,
-        variant: variant["label"],
-        ruby: ruby_ver,
-        task: variant["task"].to_s,
-        repo_pre_steps: variant["repo_pre_steps"].to_s,
-        pre_steps: variant["pre_steps"].to_s,
-        rack_requirement: variant["rack_requirement"].to_s,
-        mysql_image: variant["mysql_image"].to_s,
-        mysql_prepared_statements: variant["mysql_prepared_statements"].to_s,
-        allow_failure: !!variant["allow_failure"] || catalog[:soft_fail_map][ruby_ver],
-      },
+      display_name: "#{lib} (#{variant["label"]})",
+      framework: lib,
+      variant: variant["label"],
+      ruby: ruby_ver,
+      task: variant["task"].to_s,
+      repo_pre_steps: variant["repo_pre_steps"].to_s,
+      pre_steps: variant["pre_steps"].to_s,
+      rack_requirement: variant["rack_requirement"].to_s,
+      mysql_image: variant["mysql_image"].to_s,
+      mysql_prepared_statements: variant["mysql_prepared_statements"].to_s,
+      allow_failure: !!variant["allow_failure"] || catalog[:soft_fail_map][ruby_ver],
       services: JSON.dump(common_services(mysql_image: variant["mysql_image"]))
     }
   end

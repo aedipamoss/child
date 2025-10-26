@@ -6,7 +6,7 @@ on:
       framework:
         required: true
         type: string
-      config:
+      matrix:
         required: true
         type: string
 
@@ -26,8 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(inputs.config).matrix }}
-    services: ${{ fromJson(inputs.config).services }}
+        include: ${{ fromJson(inputs.matrix) }}
+    services: ${{ fromJson(matrix.services) }}
 
     steps:
       - name: Checkout source
