@@ -6,7 +6,7 @@ on:
       framework:
         required: true
         type: string
-      matrix-json:
+      matrix:
         required: true
         type: string
 
@@ -16,16 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       ${{
-        inputs.matrix-json != '' &&
-        fromJson(inputs.matrix-json) != null &&
-        fromJson(inputs.matrix-json)[0] != null
+        inputs.matrix != '' &&
+        fromJson(inputs.matrix) != null &&
+        fromJson(inputs.matrix)[0] != null
       }}
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.matrix-json) }}
+      matrix: ${{ fromJson(inputs.matrix) }}
     services: ${{ fromJson(matrix.services) }}
 
     steps:
