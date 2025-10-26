@@ -18,34 +18,33 @@ on:
 
 jobs:
   load-config:
-    uses: ./.github/workflows/load-config.yml
-    with:
-      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
-      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
-
-  debug:
-    name: debug loaded config
-    needs: load-config
+    name: Load Config
     runs-on: ubuntu-latest
+    outputs:
+      frameworks: ${{ steps.extract.outputs.frameworks }}
+      ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
+      ruby-default: ${{ steps.extract.outputs.ruby-default }}
     steps:
-      - name: Show all outputs
+      - name: Checkout CI utilities
+        uses: actions/checkout@v4
+        with:
+          repository: aedipamoss/child
+          ref: new
+          path: rails-ci
+
+      - name: Checkout Rails source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+          path: source
+
+      - name: Parse config
+        id: extract
         run: |
-          echo "${{ toJson(needs.load-config.outputs) }}"
-      - name: Show all output
-        run: |
-          echo "${{ needs.load-config.output }}"
-      - name: Show frameworks config
-        run: |
-          echo "Frameworks config:"
-          echo "${{ needs.load-config.outputs.frameworks }}"
-      - name: Show ruby-supported
-        run: |
-          echo "Ruby supported:"
-          echo "${{ needs.load-config.outputs.ruby-supported }}"
-      - name: Show ruby-default
-        run: |
-          echo "Ruby default:"
-          echo "${{ needs.load-config.outputs.ruby-default }}"
+          ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
+            "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
+            "${{ github.workspace }}/source"
 
   actionpack:
     name: Action Pack
