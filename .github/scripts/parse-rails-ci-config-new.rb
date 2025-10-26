@@ -279,7 +279,6 @@ end
 # 3. Main parse logic
 # --------------------------------------------------------------------
 
-config = YAML.load_file(CONFIG_PATH, aliases: true)
 frameworks = {}
 
 (config.dig("frameworks", "entries") || []).each do |entry|
@@ -298,4 +297,14 @@ output = {
   ruby_default: ruby_catalog[:default]
 }
 
+output_path = ENV['GITHUB_OUTPUT']
+abort 'GITHUB_OUTPUT environment variable is not set.' if output_path.nil? || output_path.empty?
+
 puts JSON.pretty_generate(output)
+
+File.open(output_path, 'a') do |file|
+  outputs.each do |key, value|
+    serialized = value.is_a?(String) ? value : JSON.dump(value)
+    file.puts("#{key}=#{serialized}")
+  end
+end

@@ -40,5 +40,5 @@ jobs:
         id: extract
         run: |
           ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
-            "${{ github.workspace }}/rails-ci/.github/rails-ci-config.yml" \
+            "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
             "${{ github.workspace }}/source"
