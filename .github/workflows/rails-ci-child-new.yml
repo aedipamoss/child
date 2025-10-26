@@ -46,6 +46,12 @@ jobs:
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
             "${{ github.workspace }}/source"
 
+      - name: Output debug info
+        run: |
+          echo "Frameworks: ${{ steps.extract.outputs.frameworks }}"
+          echo "Ruby supported: ${{ steps.extract.outputs.ruby-supported }}"
+          echo "Ruby default: ${{ steps.extract.outputs.ruby-default }}"
+
   actionpack:
     name: Action Pack
     needs: load-config
