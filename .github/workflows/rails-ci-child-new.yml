@@ -29,7 +29,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actionpack
-      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.actionpack) }}
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.actionpack) }}
 
   activerecord:
     name: Active Record
@@ -37,7 +37,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: activerecord
-      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.activerecord) }}
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activerecord) }}
 
   activesupport:
     name: Active Support
@@ -45,7 +45,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: activesupport
-      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.activesupport) }}
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activesupport) }}
 
   railties:
     name: Railties
@@ -53,4 +53,4 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: railties
-      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.railties) }}
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.railties) }}

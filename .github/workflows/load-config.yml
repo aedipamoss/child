@@ -17,7 +17,7 @@ jobs:
     name: Load Config
     runs-on: ubuntu-latest
     outputs:
-      frameworks-matrix: ${{ steps.extract.outputs.frameworks-matrix }}
+      frameworks: ${{ steps.extract.outputs.frameworks }}
       ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
       ruby-default: ${{ steps.extract.outputs.ruby-default }}
 
