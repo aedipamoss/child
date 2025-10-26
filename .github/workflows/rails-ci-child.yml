@@ -46,18 +46,6 @@ jobs:
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config.yml" \
             "${{ github.workspace }}/source"
 
-  debug:
-    name: Debug Loaded Config
-    needs: load-config
-    runs-on: ubuntu-latest
-    steps:
-      - name: Output frameworks config
-        run: |
-          echo "Frameworks config:"
-          echo '${{ needs.load-config.outputs.frameworks }}'
-          echo "Action Pack"
-          echo '${{ fromJson(needs.load-config.outputs.frameworks).actionpack }}'
-
   actionpack:
     name: Action Pack
     needs: load-config
