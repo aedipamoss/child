@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          json=$(ruby rails-ci/.github/scripts/parse-rails-ci-config.rb \
+          json=$(ruby rails-ci/.github/scripts/parse-rails-ci-config-new.rb \
             rails-ci/.github/rails-ci-config.yml \
             source)
 
