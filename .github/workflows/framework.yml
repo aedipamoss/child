@@ -48,9 +48,10 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           branch-name: ${{ github.ref_name }}
 
-      - name: debug allow failure
+      - name: debug env
         run: |
-          echo "Allow failure: ${{ matrix.allow_failure }}"
+          echo "ENV"
+          env
 
       - name: Run framework task
         env:
