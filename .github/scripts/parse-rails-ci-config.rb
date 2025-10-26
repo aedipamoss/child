@@ -1,15 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'json'
-require 'yaml'
-require 'pathname'
-require 'rubygems'
-
-if ARGV.length != 2
-  warn "Usage: ruby #{$PROGRAM_NAME} <config-path> <rails-root>"
-  exit 1
-end
+require "yaml"
+require "json"
+require "pathname"
+require "rubygems"
 
 CONFIG_PATH = Pathname.new(ARGV[0]).expand_path
 RAILS_ROOT = Pathname.new(ARGV[1]).expand_path
@@ -229,7 +224,6 @@ ruby_catalog = {
   soft_fail_map: ruby_soft_fail_map
 }
 
-
 def expand_ruby_tokens(tokens, catalog)
   list = Array(tokens)
   list = ['default'] if list.empty?
@@ -261,154 +255,53 @@ def expand_ruby_tokens(tokens, catalog)
   end
 end
 
-lint_section = config.fetch('lint')
-lint_default_requirement = lint_section.delete('rails_version')
-lint_default_tokens = Array(lint_section['rubies'])
-lint_default_rubies = expand_ruby_tokens(lint_default_tokens, ruby_catalog)
+def expand_variant(lib, variant, catalog)
+  rails_requirement =
+    variant.key?("rails_version") ? variant.delete("rails_version") : ""
+  return [] unless requirement_satisfied?(rails_requirement, rails_version)
 
-lint_entries = lint_section.fetch('tasks').flat_map do |task|
-  task_hash = task.transform_keys(&:to_s)
-  task_requirement = task_hash.key?('rails_version') ? task_hash.delete('rails_version') : lint_default_requirement
-  next [] unless requirement_satisfied?(task_requirement, rails_version)
-
-  task_tokens = task_hash.key?('rubies') ? Array(task_hash['rubies']) : lint_default_tokens
-  task_rubies = expand_ruby_tokens(task_tokens, ruby_catalog)
-  task_rubies = lint_default_rubies if task_rubies.empty?
-
-  task_rubies.map do |ruby_version|
-    soft_fail = ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
-    data = {
-      'ruby' => ruby_version,
-      'task' => task_hash.fetch('task'),
-      'command' => task_hash.fetch('command'),
-      'allow_failure' => soft_fail
+  expand_ruby_tokens(variant["rubies"], catalog).map do |ruby_ver|
+    {
+      display_name: "#{lib} (#{variant["label"]})",
+      framework: lib,
+      variant: variant["label"],
+      ruby: ruby_ver,
+      nodejs: variant.key?("nodejs") ? variant["nodejs"].to_s : "false",
+      task: variant.key?("task") ? variant["task"].to_s : "test",
+      repo_pre_steps: variant["repo_pre_steps"].to_s,
+      pre_steps: variant["pre_steps"].to_s,
+      rack_requirement: variant["rack_requirement"].to_s,
+      mysql_image: variant["mysql_image"].to_s,
+      mysql_prepared_statements: variant["mysql_prepared_statements"].to_s,
+      allow_failure: !!variant["allow_failure"] || catalog[:soft_fail_map][ruby_ver],
+      services: JSON.dump(framework_services(mysql_image: variant["mysql_image"]))
     }
-
-    if task_hash.key?('workdir') && !task_hash['workdir'].to_s.empty?
-      data['workdir'] = task_hash['workdir']
-    end
-
-    data
   end
 end
 
-frameworks_section = config.fetch('frameworks')
-framework_section_requirement = frameworks_section.delete('rails_version')
-framework_defaults = (frameworks_section['defaults'] || {}).transform_keys(&:to_s)
-framework_default_requirement = framework_defaults.delete('rails_version') || framework_section_requirement
-framework_defaults['allow_failure'] = !!framework_defaults.fetch('allow_failure', false)
-framework_defaults['repo_pre_steps'] ||= ''
-framework_defaults['framework_pre_steps'] ||= ''
-framework_defaults['rack_requirement'] ||= ''
-framework_defaults['variant'] ||= ''
-framework_defaults['task'] ||= ''
+frameworks = {}
 
-framework_default_tokens = Array(frameworks_section['rubies'])
-framework_default_rubies = expand_ruby_tokens(framework_default_tokens, ruby_catalog)
-
-framework_entries = frameworks_section.fetch('entries').flat_map do |entry|
-  entry_hash = framework_defaults.merge(entry.transform_keys(&:to_s))
-  entry_requirement = entry_hash.key?('rails_version') ? entry_hash.delete('rails_version') : framework_default_requirement
-  next [] unless requirement_satisfied?(entry_requirement, rails_version)
-
-  entry_tokens = entry.key?('supported_rubies') ? Array(entry['supported_rubies']) : framework_default_tokens
-  entry_hash.delete('supported_rubies')
-  entry_rubies = expand_ruby_tokens(entry_tokens, ruby_catalog)
-  entry_rubies = framework_default_rubies if entry_rubies.empty?
-
-  entry_rubies.map do |ruby_version|
-    data = entry_hash.dup
-    data['ruby'] = ruby_version
-    data['allow_failure'] = !!data.fetch('allow_failure', false) || ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
-    data['repo_pre_steps'] = data['repo_pre_steps'] || ''
-    data['framework_pre_steps'] = data['framework_pre_steps'] || ''
-    data['rack_requirement'] = data['rack_requirement'] || ''
-    data['variant'] = data['variant'] || ''
-    data['task'] = data['task'].nil? || data['task'].empty? ? 'test' : data['task']
-    display_name = data.delete('name')
-    data['display_name'] = display_name.nil? || display_name.empty? ? data['framework'] : display_name
-    data['services'] = JSON.dump(framework_services(mysql_image: data['mysql_image']))
-    data
-  end
+(config.dig("frameworks", "entries") || []).each do |entry|
+  lib = entry["lib"]
+  next unless lib
+  frameworks[lib] = (entry["variants"] || []).flat_map { |v| expand_variant(lib, v, ruby_catalog) }
 end
 
-railties_section = config.fetch('railties')
-railties_default_requirement = railties_section.delete('rails_version')
-railties_default_tokens = Array(railties_section['rubies'])
-railties_default_rubies = expand_ruby_tokens(railties_default_tokens, ruby_catalog)
-default_shards = Array(railties_section['shards'])
-
-railties_entries = railties_section.fetch('variants').flat_map do |variant|
-  variant_hash = variant.transform_keys(&:to_s)
-  variant_requirement = variant_hash.key?('rails_version') ? variant_hash.delete('rails_version') : railties_default_requirement
-  next [] unless requirement_satisfied?(variant_requirement, rails_version)
-
-  variant_tokens = variant_hash.key?('supported_rubies') ? Array(variant_hash.delete('supported_rubies')) : railties_default_tokens
-  variant_rubies = expand_ruby_tokens(variant_tokens, ruby_catalog)
-  variant_rubies = railties_default_rubies if variant_rubies.empty?
-  shards = Array(variant_hash.delete('shards') || default_shards)
-  total_shards = shards.length
-
-  variant_rubies.flat_map do |ruby_version|
-    shards.each_with_index.map do |shard, index|
-      data = variant_hash.dup
-      data['ruby'] = ruby_version
-      data['shard'] = shard
-      data['total_shards'] = total_shards
-      data['parallel_job'] = index
-      data['variant'] = data['variant'] || 'default'
-      data['repo_pre_steps'] = data['repo_pre_steps'] || ''
-      data['framework_pre_steps'] = data['framework_pre_steps'] || ''
-      data['rack_requirement'] = data['rack_requirement'] || ''
-      data['allow_failure'] = !!data.fetch('allow_failure', false) || ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
-      data['services'] = JSON.dump(common_services(mysql_image: data['mysql_image']))
-      data
-    end
-  end
-end
-
-isolated_section = config.fetch('isolated')
-isolated_default_requirement = isolated_section.delete('rails_version')
-isolated_default_tokens = Array(isolated_section['rubies'])
-isolated_default_rubies = expand_ruby_tokens(isolated_default_tokens, ruby_catalog)
-
-isolated_entries = isolated_section.fetch('suites').flat_map do |suite|
-  base = suite.transform_keys(&:to_s)
-  suite_requirement = base.key?('rails_version') ? base.delete('rails_version') : isolated_default_requirement
-  next [] unless requirement_satisfied?(suite_requirement, rails_version)
-
-  suite_tokens = base.key?('rubies') ? Array(base.delete('rubies')) : isolated_default_tokens
-  suite_rubies = expand_ruby_tokens(suite_tokens, ruby_catalog)
-  suite_rubies = isolated_default_rubies if suite_rubies.empty?
-
-  common_services = common_services(mysql_image: base['mysql_image'])
-  suite_services = base.key?('services') ? common_services.merge(base.delete('services')) : common_services
-
-  suite_rubies.map do |ruby_version|
-    data = base.dup
-    data['ruby'] = ruby_version
-    data['framework_label'] = data['framework_label'].nil? || data['framework_label'].empty? ? data['framework'] : data['framework_label']
-    data['variant_label'] = data['variant_label'] || ''
-    data['allow_failure'] = !!data.fetch('allow_failure', false) || ruby_catalog[:soft_fail_map].fetch(ruby_version, false)
-    data['services'] = JSON.dump(suite_services)
-    data
-  end
-end
-
-outputs = {
-  'lint-matrix' => { 'include' => lint_entries },
-  'frameworks-matrix' => { 'include' => framework_entries },
-  'railties-matrix' => { 'include' => railties_entries },
-  'isolated-matrix' => { 'include' => isolated_entries },
-  'ruby-default' => default_ruby,
-  'ruby-supported' => ruby_catalog[:supported]
+output = {
+  "frameworks" => frameworks,
+  "ruby-supported" => ruby_catalog[:supported],
+  "ruby-default" => ruby_catalog[:default]
 }
 
 output_path = ENV['GITHUB_OUTPUT']
 abort 'GITHUB_OUTPUT environment variable is not set.' if output_path.nil? || output_path.empty?
 
+puts "::group::Parsed Rails CI Configuration"
+puts JSON.pretty_generate(output)
+puts "::endgroup::"
+
 File.open(output_path, 'a') do |file|
-  outputs.each do |key, value|
+  output.each do |key, value|
     serialized = value.is_a?(String) ? value : JSON.dump(value)
     file.puts("#{key}=#{serialized}")
   end

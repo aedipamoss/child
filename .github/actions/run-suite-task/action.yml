@@ -20,10 +20,14 @@ inputs:
     description: Optional rack version requirement to export as RACK.
     required: false
     default: ''
-  install-node-dependencies:
+  nodejs:
     description: Install JavaScript dependencies if package.json is detected.
     required: false
     default: 'false'
+  mysql-prepared-statements:
+    description: Whether to enable MySQL prepared statements.
+    required: false
+    default: ''
   retry-count:
     description: Number of attempts to run the command before failing.
     required: false
@@ -39,12 +43,9 @@ runs:
         RUN_TASK_REPO_PRE_STEPS: ${{ inputs['repo-pre-steps'] }}
         RUN_TASK_PRE_STEPS: ${{ inputs['pre-steps'] }}
         RUN_TASK_RACK_REQUIREMENT: ${{ inputs['rack-requirement'] }}
-        RUN_TASK_INSTALL_NODE: ${{ inputs['install-node-dependencies'] }}
+        RUN_TASK_MYSQL_PREPARED_STATEMENTS: ${{ inputs['mysql-prepared-statements'] }}
+        RUN_TASK_INSTALL_NODE: ${{ inputs['nodejs'] }}
         RUN_TASK_RETRY_COUNT: ${{ inputs['retry-count'] }}
-
-        # actions tty
-        FORCE_COLOR: "1"
-        TERM: xterm-256color
 
       run: |
         set -eo pipefail
@@ -67,6 +68,12 @@ runs:
             export RACK="${RUN_TASK_RACK_REQUIREMENT}"
           else
             unset RACK || true
+          fi
+
+          if [ "${RUN_TASK_MYSQL_PREPARED_STATEMENTS}" = "true" ]; then
+            export MYSQL_PREPARED_STATEMENTS=1
+          else
+            unset MYSQL_PREPARED_STATEMENTS || true
           fi
 
           if [ -n "${RUN_TASK_REPO_PRE_STEPS}" ] && [ "${RUN_TASK_REPO_PRE_STEPS}" != "null" ]; then
@@ -115,7 +122,9 @@ runs:
 
           echo "::group::Run Task"
           bash -lc "${RUN_TASK_COMMAND}"
+          local status=$?
           echo "::endgroup::"
+          return $status
         }
 
         attempt=1

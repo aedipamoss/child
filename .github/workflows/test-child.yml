@@ -12,10 +12,9 @@ permissions:
 
 jobs:
   test-child:
-    name: Run child workflow with rails/rails@main
+    name: Run
     uses: ./.github/workflows/rails-ci-child.yml
     with:
       parent-workflow-id: ${{ github.run_id }}
-      notes: Test run against rails/rails@main
-      source-repository: rails/rails
+      source-repo: rails/rails
       source-ref: main

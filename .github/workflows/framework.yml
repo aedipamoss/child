@@ -1,0 +1,83 @@
+name: Run Framework Suite
+
+on:
+  workflow_call:
+    inputs:
+      framework:
+        required: true
+        type: string
+      matrix:
+        required: true
+        type: string
+      source-repo:
+        required: true
+        type: string
+      source-ref:
+        required: true
+        type: string
+env:
+  BUILDKITE: "true"
+  BEANSTALK_URL: beanstalk://beanstalkd:11300
+  MEMCACHE_SERVERS: memcached:11211
+  MYSQL_HOST: mysql
+  MYSQL_PORT: 3306
+  MYSQL_USERNAME: root
+  MYSQL_PASSWORD: ""
+  MYSQL_SOCKET: ""
+  PGHOST: postgres
+  PGPORT: 5432
+  PGUSER: postgres
+  PGDATABASE: postgres
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: ""
+  QC_DATABASE_URL: postgres://postgres@postgres:5432/active_jobs_qc_int_test
+  QUE_DATABASE_URL: postgres://postgres@postgres:5432/active_jobs_que_int_test
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+  REDIS_URL: redis://redis:6379/1
+  SELENIUM_DRIVER_URL: http://chrome:4444/wd/hub
+
+  # actions tty
+  FORCE_COLOR: "1"
+  TERM: xterm-256color
+
+jobs:
+  run:
+    name: ${{ inputs.framework }} (${{ matrix.variant }}) [${{ matrix.ruby }}]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    services: ${{ fromJson(matrix.services) }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-ref }}
+
+      - name: Setup environment
+        uses: aedipamoss/child/.github/actions/setup-environment@main
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
+
+      - name: Run framework task
+        env:
+          MYSQL_IMAGE: ${{ matrix.mysql_image }}
+        timeout-minutes: 30
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
+        with:
+          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
+          workdir: ${{ matrix.framework }}
+          repo-pre-steps: ${{ matrix.repo_pre_steps }}
+          pre-steps: ${{ matrix.pre_steps }}
+          rack-requirement: ${{ matrix.rack_requirement }}
+          nodejs: ${{ matrix.nodejs }}
+          mysql-prepared-statements: ${{ matrix.mysql_prepared_statements }}
