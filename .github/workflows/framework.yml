@@ -16,7 +16,6 @@ on:
         required: true
         type: string
 env:
-  CI: "true"
   BUILDKITE: "true"
   BEANSTALK_URL: beanstalk://beanstalkd:11300
   MEMCACHE_SERVERS: memcached:11211
@@ -48,12 +47,6 @@ jobs:
   run:
     name: ${{ inputs.framework }} (${{ matrix.variant }}) [${{ matrix.ruby }}]
     runs-on: ubuntu-latest
-    #if: >-
-    #  ${{
-    #    inputs.matrix != '' &&
-    #    fromJson(inputs.matrix) != null &&
-    #    fromJson(inputs.matrix)[0] != null
-    #  }}
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
@@ -76,11 +69,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           branch-name: ${{ github.ref_name }}
 
-      - name: debug env
-        run: |
-          echo "ENV"
-          env
-
       - name: Run framework task
         env:
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
@@ -93,4 +81,4 @@ jobs:
           repo-pre-steps: ${{ matrix.repo_pre_steps }}
           pre-steps: ${{ matrix.pre_steps }}
           rack-requirement: ${{ matrix.rack_requirement }}
-          install-node-dependencies: 'true'
+          nodejs: ${{ matrix.nodejs }}

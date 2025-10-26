@@ -266,6 +266,7 @@ def expand_variant(lib, variant, catalog)
       framework: lib,
       variant: variant["label"],
       ruby: ruby_ver,
+      nodejs: variant.key?("nodejs") ? variant["nodejs"].to_s : "false",
       task: variant.key?("task") ? variant["task"].to_s : "test",
       repo_pre_steps: variant["repo_pre_steps"].to_s,
       pre_steps: variant["pre_steps"].to_s,
