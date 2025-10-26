@@ -23,38 +23,31 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
-    #strategy:
-    #  fail-fast: false
-    #  matrix: ${{ fromJson(inputs.matrix) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.matrix) }}
     services: ${{ fromJson(matrix.services) }}
 
     steps:
-      - name: debug inputs
-        run: |
-          echo "Framework: ${{ inputs.framework }}"
-          echo "Matrix:"
-          echo '${{ fromJson(inputs.matrix) }}'
-          echo "Current matrix item: ${{ toJson(matrix) }}"
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      #- name: Checkout source
-      #  uses: actions/checkout@v4
+      - name: Setup environment
+        uses: aedipamoss/child/.github/actions/setup-environment@new
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
 
-      #- name: Setup environment
-      #  uses: aedipamoss/child/.github/actions/setup-environment@new
-      #  with:
-      #    ruby-version: ${{ matrix.ruby }}
-      #    branch-name: ${{ github.ref_name }}
-
-      #- name: Run framework task
-      #  env:
-      #    MYSQL_IMAGE: ${{ matrix.mysql_image }}
-      #    MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
-      #  timeout-minutes: 30
-      #  uses: aedipamoss/child/.github/actions/run-suite-task@new
-      #  with:
-      #    command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
-      #    workdir: ${{ matrix.framework }}
-      #    repo-pre-steps: ${{ matrix.repo_pre_steps }}
-      #    pre-steps: ${{ matrix.pre_steps }}
-      #    rack-requirement: ${{ matrix.rack_requirement }}
-      #    install-node-dependencies: 'true'
+      - name: Run framework task
+        env:
+          MYSQL_IMAGE: ${{ matrix.mysql_image }}
+          MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
+        timeout-minutes: 30
+        uses: aedipamoss/child/.github/actions/run-suite-task@new
+        with:
+          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
+          workdir: ${{ matrix.framework }}
+          repo-pre-steps: ${{ matrix.repo_pre_steps }}
+          pre-steps: ${{ matrix.pre_steps }}
+          rack-requirement: ${{ matrix.rack_requirement }}
+          install-node-dependencies: 'true'
