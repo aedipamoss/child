@@ -25,7 +25,8 @@ jobs:
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.config).matrix }}
+      matrix:
+        include: ${{ fromJson(inputs.config).matrix }}
     services: ${{ fromJson(inputs.config).services }}
 
     steps:
