@@ -23,6 +23,24 @@ jobs:
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
+  debug:
+    name: debug loaded config
+    needs: load-config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show frameworks config
+        run: |
+          echo "Frameworks config:"
+          echo "${{ needs.load-config.outputs.frameworks }}"
+      - name: Show ruby-supported
+        run: |
+          echo "Ruby supported:"
+          echo "${{ needs.load-config.outputs.ruby-supported }}"
+      - name: Show ruby-default
+        run: |
+          echo "Ruby default:"
+          echo "${{ needs.load-config.outputs.ruby-default }}"
+
   actionpack:
     name: Action Pack
     needs: load-config
