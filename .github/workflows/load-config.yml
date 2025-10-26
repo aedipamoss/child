@@ -55,8 +55,8 @@ jobs:
       - name: Show extracted config
         run: |
           echo "Frameworks config:"
-          echo "${{ steps.extract.outputs.frameworks }}"
+          echo "${{ toJson(steps.extract.outputs.frameworks) }}"
           echo "Ruby supported:"
-          echo "${{ steps.extract.outputs.ruby-supported }}"
+          echo "${{ toJson(steps.extract.outputs.ruby-supported) }}"
           echo "Ruby default:"
-          echo "${{ steps.extract.outputs.ruby-default }}"
+          echo "${{ toJson(steps.extract.outputs.ruby-default) }}"
