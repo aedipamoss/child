@@ -28,6 +28,12 @@ jobs:
     needs: load-config
     runs-on: ubuntu-latest
     steps:
+      - name: Show all outputs
+        run: |
+          echo "${{ needs.load-config.outputs }}"
+      - name: Show all output
+        run: |
+          echo "${{ needs.load-config.output }}"
       - name: Show frameworks config
         run: |
           echo "Frameworks config:"
