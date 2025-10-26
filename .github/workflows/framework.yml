@@ -48,6 +48,10 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           branch-name: ${{ github.ref_name }}
 
+      - name: debug allow failure
+        run: |
+          echo "Allow failure: ${{ matrix.allow_failure }}"
+
       - name: Run framework task
         env:
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
