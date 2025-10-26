@@ -24,6 +24,10 @@ inputs:
     description: Install JavaScript dependencies if package.json is detected.
     required: false
     default: 'false'
+  mysql-prepared-statements:
+    description: Whether to enable MySQL prepared statements.
+    required: false
+    default: ''
   retry-count:
     description: Number of attempts to run the command before failing.
     required: false
@@ -39,6 +43,7 @@ runs:
         RUN_TASK_REPO_PRE_STEPS: ${{ inputs['repo-pre-steps'] }}
         RUN_TASK_PRE_STEPS: ${{ inputs['pre-steps'] }}
         RUN_TASK_RACK_REQUIREMENT: ${{ inputs['rack-requirement'] }}
+        RUN_TASK_MYSQL_PREPARED_STATEMENTS: ${{ inputs['mysql-prepared-statements'] }}
         RUN_TASK_INSTALL_NODE: ${{ inputs['nodejs'] }}
         RUN_TASK_RETRY_COUNT: ${{ inputs['retry-count'] }}
 
@@ -63,6 +68,12 @@ runs:
             export RACK="${RUN_TASK_RACK_REQUIREMENT}"
           else
             unset RACK || true
+          fi
+
+          if [ "${RUN_TASK_MYSQL_PREPARED_STATEMENTS}" = "true" ]; then
+            export MYSQL_PREPARED_STATEMENTS=1
+          else
+            unset MYSQL_PREPARED_STATEMENTS || true
           fi
 
           if [ -n "${RUN_TASK_REPO_PRE_STEPS}" ] && [ "${RUN_TASK_REPO_PRE_STEPS}" != "null" ]; then
