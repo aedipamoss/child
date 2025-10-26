@@ -173,3 +173,5 @@ jobs:
     with:
       framework: railties
       matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).railties) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
