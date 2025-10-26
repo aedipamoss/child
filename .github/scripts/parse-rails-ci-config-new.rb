@@ -305,8 +305,3 @@ File.open(output_path, 'a') do |file|
     file.puts("#{key}=#{serialized}")
   end
 end
-
-puts "::group::GITHUB_OUTPUT"
-print File.read(output_path)
-puts "\n"
-puts "::endgroup::"

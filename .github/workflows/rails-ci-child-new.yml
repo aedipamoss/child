@@ -45,12 +45,11 @@ jobs:
           ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
             "${{ github.workspace }}/source"
+          cat $GITHUB_OUTPUT
 
       - name: Output debug info
         run: |
-          echo "Frameworks: ${{ steps.extract.outputs.frameworks }}"
-          echo "Ruby supported: ${{ steps.extract.outputs.ruby-supported }}"
-          echo "Ruby default: ${{ steps.extract.outputs.ruby-default }}"
+          echo "outputs: ${{ fromJson(steps.extract.outputs) }}"
 
   actionpack:
     name: Action Pack
