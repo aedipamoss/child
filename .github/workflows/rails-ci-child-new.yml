@@ -30,7 +30,7 @@ jobs:
     steps:
       - name: Show all outputs
         run: |
-          echo "${{ fromJson(needs.load-config.outputs) }}"
+          echo "${{ toJson(needs.load-config.outputs) }}"
       - name: Show all output
         run: |
           echo "${{ needs.load-config.output }}"
