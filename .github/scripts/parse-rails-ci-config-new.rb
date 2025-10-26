@@ -287,9 +287,9 @@ frameworks = {}
 end
 
 output = {
-  frameworks: frameworks,
-  ruby_supported: ruby_catalog[:supported],
-  ruby_default: ruby_catalog[:default]
+  "frameworks" => frameworks,
+  "ruby-supported" => ruby_catalog[:supported],
+  "ruby-default" => ruby_catalog[:default]
 }
 
 output_path = ENV['GITHUB_OUTPUT']
@@ -300,7 +300,6 @@ puts JSON.pretty_generate(output)
 File.open(output_path, 'a') do |file|
   output.each do |key, value|
     serialized = value.is_a?(String) ? value : JSON.dump(value)
-    puts "Writing: #{key}=#{serialized.inspect}"
     file.puts("#{key}=#{serialized}")
   end
 end
