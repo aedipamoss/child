@@ -18,8 +18,7 @@ jobs:
       ${{
         inputs.matrix-json != '' &&
         fromJson(inputs.matrix-json) != null &&
-        fromJson(inputs.matrix-json) != [] &&
-        (fromJson(inputs.matrix-json) | length) > 0
+        fromJson(inputs.matrix-json)[0] != null
       }}
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
