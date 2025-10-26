@@ -256,7 +256,10 @@ def expand_ruby_tokens(tokens, catalog)
 end
 
 def expand_variant(lib, variant)
-  return [] unless satisfied_by_rails?(variant["rails_version"])
+  rails_requirement =
+    variant.key?("rails_version") ? variant.delete("rails_version") : ""
+  return [] unless requirement_satisfied?(rails_requirement, rails_version)
+
   expand_ruby_tokens(variant["rubies"], ruby_catalog).map do |ruby_ver|
     {
       "display_name" => "#{lib} (#{variant["label"]})",
