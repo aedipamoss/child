@@ -300,6 +300,7 @@ puts JSON.pretty_generate(output)
 File.open(output_path, 'a') do |file|
   output.each do |key, value|
     serialized = value.is_a?(String) ? value : JSON.dump(value)
+    puts "Writing: #{key}=#{serialized}"
     file.puts("#{key}=#{serialized}")
   end
 end
