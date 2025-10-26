@@ -77,6 +77,7 @@ frameworks:
       variants:
         - label: default
           repo_pre_steps: bundle exec rake -f activerecord/Rakefile db:postgresql:rebuild
+          nodejs: true
         - label: integration
           task: 'test:integration'
 
@@ -91,6 +92,7 @@ frameworks:
     - lib: actiontext
       variants:
         - label: default
+          nodejs: true
     - lib: actionview
       variants:
         - label: default
@@ -106,6 +108,7 @@ frameworks:
     - lib: activestorage
       variants:
         - label: default
+          nodejs: true
     - lib: activesupport
       variants:
         - label: default
