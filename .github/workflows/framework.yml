@@ -14,12 +14,12 @@ jobs:
   run:
     name: ${{ inputs.framework }} (${{ matrix.variant }}) [${{ matrix.ruby }}]
     runs-on: ubuntu-latest
-    if: >-
-      ${{
-        inputs.matrix != '' &&
-        fromJson(inputs.matrix) != null &&
-        fromJson(inputs.matrix)[0] != null
-      }}
+    #if: >-
+    #  ${{
+    #    inputs.matrix != '' &&
+    #    fromJson(inputs.matrix) != null &&
+    #    fromJson(inputs.matrix)[0] != null
+    #  }}
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
     continue-on-error: ${{ matrix.allow_failure }}
@@ -29,6 +29,14 @@ jobs:
     services: ${{ fromJson(matrix.services) }}
 
     steps:
+      - name: debug inputs
+        run: |
+          echo "Framework: ${{ inputs.framework }}"
+          echo "Matrix:"
+          echo '${{ fromJson(inputs.matrix) }}'
+          echo "Current matrix item: ${{ toJson(matrix) }}"
+
+
       - name: Checkout source
         uses: actions/checkout@v4
 
