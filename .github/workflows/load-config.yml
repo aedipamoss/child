@@ -11,15 +11,21 @@ on:
         description: Git ref of the Rails source to test
         required: false
         type: string
+    outputs:
+      frameworks:
+        description: JSON representation of the frameworks configuration
+        value: ${{ steps.extract.outputs.frameworks }}
+      ruby-supported:
+        description: JSON array of supported Ruby versions
+        value: ${{ steps.extract.outputs.ruby-supported }}
+      ruby-default:
+        description: Default Ruby version
+        value: ${{ steps.extract.outputs.ruby-default }}
 
 jobs:
   load-config:
     name: Load Config
     runs-on: ubuntu-latest
-    outputs:
-      frameworks: ${{ steps.extract.outputs.frameworks }}
-      ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
-      ruby-default: ${{ steps.extract.outputs.ruby-default }}
     steps:
       - name: Checkout CI utilities
         uses: actions/checkout@v4
