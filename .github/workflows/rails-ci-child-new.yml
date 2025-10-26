@@ -2,6 +2,19 @@ name: Rails CI Child New
 
 on:
   workflow_call:
+    inputs:
+      parent-workflow-id:
+        description: Identifier of the parent workflow run
+        required: true
+        type: string
+      source-repository:
+        description: Repository containing the Rails source to test
+        required: false
+        type: string
+      source-ref:
+        description: Git ref of the Rails source to test
+        required: false
+        type: string
 
 jobs:
   load-config:
