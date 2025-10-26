@@ -17,6 +17,5 @@ jobs:
     uses: ./.github/workflows/rails-ci-child-new.yml
     with:
       parent-workflow-id: ${{ github.run_id }}
-      notes: Test run against rails/rails@main
       source-repository: rails/rails
       source-ref: main
