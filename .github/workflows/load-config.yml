@@ -51,12 +51,3 @@ jobs:
           ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
             "${{ github.workspace }}/source"
-
-      - name: Show extracted config
-        run: |
-          echo "Frameworks config:"
-          echo "${{ toJson(steps.extract.outputs.frameworks) }}"
-          echo "Ruby supported:"
-          echo "${{ toJson(steps.extract.outputs.ruby-supported) }}"
-          echo "Ruby default:"
-          echo "${{ toJson(steps.extract.outputs.ruby-default) }}"

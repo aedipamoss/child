@@ -295,7 +295,9 @@ output = {
 output_path = ENV['GITHUB_OUTPUT']
 abort 'GITHUB_OUTPUT environment variable is not set.' if output_path.nil? || output_path.empty?
 
+puts "::group::Parsed Rails CI Configuration"
 puts JSON.pretty_generate(output)
+puts "::endgroup::"
 
 File.open(output_path, 'a') do |file|
   output.each do |key, value|
@@ -303,3 +305,7 @@ File.open(output_path, 'a') do |file|
     file.puts("#{key}=#{serialized}")
   end
 end
+
+puts "::group::GITHUB_OUTPUT"
+puts File.read(output_path)
+puts "::endgroup::"
