@@ -84,7 +84,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actioncable
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.actioncable) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actioncable) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -94,7 +94,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actionmailbox
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.actionmailbox) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionmailbox) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -104,7 +104,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actionmailer
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.actionmailer) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionmailer) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -114,7 +114,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actiontext
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.actiontext) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actiontext) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -124,7 +124,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actionview
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.actionview) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionview) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -134,7 +134,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: activejob
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activejob) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activejob) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -144,7 +144,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: activemodel
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activemodel) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activemodel) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -154,7 +154,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: activestorage
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activestorage) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activestorage) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -164,7 +164,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: activesupport
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activesupport) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activesupport) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
@@ -174,7 +174,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: guides
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.guides) }}
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).guides) }}
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
