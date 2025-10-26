@@ -7,10 +7,6 @@ on:
         description: Commit SHA to use for reporting
         required: true
         type: string
-      notes:
-        description: Optional notes about this run
-        required: false
-        type: string
       parent_workflow_id:
         description: Identifier for the upstream workflow run
         required: true
@@ -26,7 +22,8 @@ jobs:
     uses: ./.github/workflows/rails-ci-child.yml
     with:
       parent-workflow-id: ${{ github.run_id }}
-      notes: ${{ inputs.notes }}
+      source-repo: ${{ github.repository }}
+      source-ref: ${{ github.sha }}
 
   build-link:
     name: Build Page Reference

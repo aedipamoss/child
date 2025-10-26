@@ -166,13 +166,10 @@ jobs:
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
-
-
-
-  #railties:
-  #  name: Railties
-  #  needs: load-config
-  #  uses: ./.github/workflows/framework.yml
-  #  with:
-  #    framework: railties
-  #    matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.railties) }}
+  railties:
+    name: Railties
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: railties
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).railties) }}
