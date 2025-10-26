@@ -9,6 +9,12 @@ on:
       matrix:
         required: true
         type: string
+      source-repo:
+        required: true
+        type: string
+      source-ref:
+        required: true
+        type: string
 
 jobs:
   run:
@@ -32,6 +38,9 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-ref }}
 
       - name: Setup environment
         uses: aedipamoss/child/.github/actions/setup-environment@new
