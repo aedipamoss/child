@@ -307,5 +307,6 @@ File.open(output_path, 'a') do |file|
 end
 
 puts "::group::GITHUB_OUTPUT"
-puts File.read(output_path)
+print File.read(output_path)
+puts "\n"
 puts "::endgroup::"
