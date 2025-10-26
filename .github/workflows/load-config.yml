@@ -39,15 +39,6 @@ jobs:
       - name: Parse config
         id: extract
         run: |
-          set -euo pipefail
-
-          json=$(ruby rails-ci/.github/scripts/parse-rails-ci-config-new.rb \
-            rails-ci/.github/rails-ci-config.yml \
-            source)
-
-          echo "frameworks-matrix<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$json" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-          echo "ruby-supported=$(jq -r '.ruby_supported | join(" ")' <<<"$json")" >> "$GITHUB_OUTPUT"
-          echo "ruby-default=$(jq -r '.ruby_default' <<<"$json")" >> "$GITHUB_OUTPUT"
+          ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
+            "${{ github.workspace }}/rails-ci/.github/rails-ci-config.yml" \
+            "${{ github.workspace }}/source"
