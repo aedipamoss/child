@@ -6,7 +6,7 @@ on:
       framework:
         required: true
         type: string
-      matrix:
+      config:
         required: true
         type: string
 
@@ -25,8 +25,8 @@ jobs:
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.matrix) }}
-    services: ${{ fromJson(matrix.services) }}
+      matrix: ${{ fromJson(inputs.config).matrix }}
+    services: ${{ fromJson(inputs.confog).services) }}
 
     steps:
       - name: Checkout source

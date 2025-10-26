@@ -64,7 +64,7 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actionpack
-      matrix: ${{ fromJson(needs.load-config.outputs.frameworks).actionpack }}
+      config: ${{ fromJson(needs.load-config.outputs.frameworks).actionpack }}
 
   #activerecord:
   #  name: Active Record
