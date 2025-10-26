@@ -63,7 +63,7 @@ jobs:
           ref: ${{ inputs.source-ref }}
 
       - name: Setup environment
-        uses: aedipamoss/child/.github/actions/setup-environment@new
+        uses: aedipamoss/child/.github/actions/setup-environment@main
         with:
           ruby-version: ${{ matrix.ruby }}
           branch-name: ${{ github.ref_name }}
@@ -72,7 +72,7 @@ jobs:
         env:
           MYSQL_IMAGE: ${{ matrix.mysql_image }}
         timeout-minutes: 30
-        uses: aedipamoss/child/.github/actions/run-suite-task@new
+        uses: aedipamoss/child/.github/actions/run-suite-task@main
         with:
           command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
           workdir: ${{ matrix.framework }}

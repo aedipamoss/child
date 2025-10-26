@@ -7,11 +7,7 @@ on:
         description: Identifier of the parent workflow run
         required: true
         type: string
-      notes:
-        description: Additional notes passed from the parent workflow
-        required: false
-        type: string
-      source-repository:
+      source-repo:
         description: Repository containing the Rails source to test
         required: false
         type: string
@@ -20,86 +16,29 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: write
-  actions: write
-
-env:
-  CI: "true"
-  BUILDKITE: "true"
-  BEANSTALK_URL: beanstalk://beanstalkd:11300
-  MEMCACHE_SERVERS: memcached:11211
-  MYSQL_HOST: mysql
-  MYSQL_PORT: 3306
-  MYSQL_USERNAME: root
-  MYSQL_PASSWORD: ""
-  MYSQL_SOCKET: ""
-  MYSQL_PREPARED_STATEMENTS: ""
-  PGHOST: postgres
-  PGPORT: 5432
-  PGUSER: postgres
-  PGDATABASE: postgres
-  POSTGRES_HOST: postgres
-  POSTGRES_PORT: 5432
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: ""
-  QC_DATABASE_URL: postgres://postgres@postgres:5432/active_jobs_qc_int_test
-  QUE_DATABASE_URL: postgres://postgres@postgres:5432/active_jobs_que_int_test
-  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
-  REDIS_URL: redis://redis:6379/1
-  SELENIUM_DRIVER_URL: http://chrome:4444/wd/hub
-
-  # actions tty
-  FORCE_COLOR: "1"
-  TERM: xterm-256color
-
 jobs:
   load-config:
-    name: Load Rails CI Configuration
+    name: Load Config
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      actions: read
-
     outputs:
-      lint-matrix: ${{ steps.extract.outputs.lint-matrix }}
-      frameworks-matrix: ${{ steps.extract.outputs.frameworks-matrix }}
-      railties-matrix: ${{ steps.extract.outputs.railties-matrix }}
-      isolated-matrix: ${{ steps.extract.outputs.isolated-matrix }}
-      default-ruby: ${{ steps.extract.outputs.ruby-default }}
-      supported-rubies: ${{ steps.extract.outputs.ruby-supported }}
+      frameworks: ${{ steps.extract.outputs.frameworks }}
+      ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
+      ruby-default: ${{ steps.extract.outputs.ruby-default }}
     steps:
-      #- name: Fetch parent workflow metadata
-      #  id: parent
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  run: |
-      #    set -euo pipefail
-      #    response=$(curl -sSf -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-      #      -H "Accept: application/vnd.github+json" \
-      #      "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ inputs.parent-workflow-id }}")
-      #    source_repository=$(echo "$response" | jq -r '.head_repository.full_name')
-      #    source_ref=$(echo "$response" | jq -r '.head_branch // empty')
-      #    source_sha=$(echo "$response" | jq -r '.head_sha')
-      #    if [ -z "$source_ref" ]; then
-      #      source_ref="$source_sha"
-      #    fi
-      #    echo "source-repository=$source_repository" >> "$GITHUB_OUTPUT"
-      #    echo "source-ref=$source_ref" >> "$GITHUB_OUTPUT"
-      #    echo "source-sha=$source_sha" >> "$GITHUB_OUTPUT"
-      - name: Checkout Rails CI utilities
+      - name: Checkout CI utilities
         uses: actions/checkout@v4
         with:
-          repository: "aedipamoss/child"
+          repository: aedipamoss/child
           ref: main
           path: rails-ci
-      - name: Checkout source repository
+
+      - name: Checkout Rails source
         uses: actions/checkout@v4
         with:
-          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+          repository: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
           ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
           path: source
+
       - name: Parse config
         id: extract
         run: |
@@ -107,168 +46,145 @@ jobs:
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config.yml" \
             "${{ github.workspace }}/source"
 
-  lint:
+  debug:
+    name: Debug Loaded Config
     needs: load-config
-    name: Lint (${{ matrix.task }}) on Ruby ${{ matrix.ruby }}
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-    continue-on-error: ${{ matrix.allow_failure }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.load-config.outputs.lint-matrix) }}
     steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
-          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
-      - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          branch-name: ${{ github.ref_name }}
-      - name: Run lint command
-        uses: aedipamoss/child/.github/actions/run-suite-task@main
-        with:
-          command: ${{ matrix.command }}
-          workdir: ${{ matrix.workdir || '.' }}
-
-  frameworks:
-    needs: load-config
-    name: ${{ matrix.display_name }} (${{ matrix.ruby }})${{ matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-    continue-on-error: ${{ matrix.allow_failure }}
-    services: ${{ fromJson(matrix.services) }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.load-config.outputs.frameworks-matrix) }}
-    steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
-          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
-      - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          branch-name: ${{ github.ref_name }}
-      - name: Run framework task
-        env:
-          MYSQL_IMAGE: ${{ matrix.mysql_image }}
-          MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
-        timeout-minutes: 30
-        uses: aedipamoss/child/.github/actions/run-suite-task@main
-        with:
-          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
-          workdir: ${{ matrix.framework }}
-          repo-pre-steps: ${{ matrix.repo_pre_steps }}
-          pre-steps: ${{ matrix.pre_steps }}
-          rack-requirement: ${{ matrix.rack_requirement }}
-          install-node-dependencies: 'true'
-
-  railties:
-    needs: load-config
-    name: Railties (${{ matrix.ruby }})${{ matrix.variant != 'default' && matrix.variant != '' && format(' [{0}]', matrix.variant) || '' }} shard ${{ matrix.shard }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-
-    env:
-      # actions tty
-      FORCE_COLOR: "1"
-      TERM: xterm-256color
-
-    continue-on-error: ${{ matrix.allow_failure }}
-    services: ${{ fromJson(matrix.services) }}
-    strategy:
-      fail-fast: false
-      max-parallel: 12
-      matrix: ${{ fromJson(needs.load-config.outputs.railties-matrix) }}
-    steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
-          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
-      - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          branch-name: ${{ github.ref_name }}
-      - name: Run Railties shard
-        env:
-          RAILS_SHARD: ${{ matrix.shard }}
-          BUILDKITE_PARALLEL_JOB: ${{ matrix.parallel_job }}
-          BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
-        timeout-minutes: 30
-        uses: aedipamoss/child/.github/actions/run-suite-task@main
-        with:
-          command: script -q -e -c "bundle exec rake test"
-          workdir: railties
-          repo-pre-steps: ${{ matrix.repo_pre_steps }}
-          pre-steps: ${{ matrix.pre_steps }}
-          rack-requirement: ${{ matrix.rack_requirement }}
-      - name: Debug
+      - name: Output frameworks config
         run: |
-          ls -alh $PWD
-          ls -alh ..
-          ls -alh ../..
+          echo "Frameworks config:"
+          echo '${{ needs.load-config.outputs.frameworks }}'
+          echo "Action Pack"
+          echo '${{ fromJson(needs.load-config.outputs.frameworks).actionpack }}'
 
-  isolated:
+  actionpack:
+    name: Action Pack
     needs: load-config
-    name: "${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
-    continue-on-error: ${{ matrix.allow_failure }}
-    services: ${{ fromJson(matrix.services) }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.load-config.outputs.isolated-matrix) }}
-    steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
-          ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
-      - uses: aedipamoss/child/.github/actions/setup-environment@main
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          branch-name: ${{ github.ref_name }}
-      - name: Run isolated task
-        timeout-minutes: 30
-        uses: aedipamoss/child/.github/actions/run-suite-task@main
-        with:
-          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
-          workdir: ${{ matrix.framework }}
-          pre-steps: |
-            echo "Parent workflow ID: ${{ inputs.parent-workflow-id }}"
-            echo "Executing ${{ matrix.framework_label }}${{ matrix.variant_label != '' && format(': {0}', matrix.variant_label) || '' }} isolated (Ruby ${{ matrix.ruby }})"
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actionpack
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionpack) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
-  completion:
-    name: Child Workflow Completion Summary
-    needs:
-      - lint
-      - frameworks
-      - railties
-      - isolated
-    runs-on: ubuntu-latest
-    steps:
-      - name: Summarize results
-        run: |
-          cat <<JSON > summary.json
-          {
-            "parent_workflow_id": "${{ inputs.parent-workflow-id }}",
-            "lint": "${{ needs.lint.result }}",
-            "frameworks": "${{ needs.frameworks.result }}",
-            "railties": "${{ needs.railties.result }}",
-            "isolated": "${{ needs.isolated.result }}"
-          }
-          JSON
-          cat summary.json
-      - name: Upload child summary
-        uses: actions/upload-artifact@v4
-        with:
-          name: rails-ci-child-summary
-          path: summary.json
+  activerecord:
+    name: Active Record
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activerecord
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activerecord) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  actioncable:
+    name: Action Cable
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actioncable
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actioncable) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  actionmailbox:
+    name: Action Mailbox
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actionmailbox
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionmailbox) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  actionmailer:
+    name: Action Mailer
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actionmailer
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionmailer) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  actiontext:
+    name: Action Text
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actiontext
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actiontext) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  actionview:
+    name: Action View
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actionview
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionview) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  activejob:
+    name: Active Job
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activejob
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activejob) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  activemodel:
+    name: Active Model
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activemodel
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activemodel) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  activestorage:
+    name: Active Storage
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activestorage
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activestorage) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  activesupport:
+    name: Active Support
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activesupport
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activesupport) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+  guides:
+    name: Guides
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: guides
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).guides) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
+
+
+
+
+  #railties:
+  #  name: Railties
+  #  needs: load-config
+  #  uses: ./.github/workflows/framework.yml
+  #  with:
+  #    framework: railties
+  #    matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.railties) }}
