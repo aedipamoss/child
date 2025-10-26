@@ -1,0 +1,44 @@
+name: Load Rails CI Configuration
+
+on:
+  workflow_call:
+
+jobs:
+  load-config:
+    name: Load Config
+    runs-on: ubuntu-latest
+    outputs:
+      frameworks-matrix: ${{ steps.extract.outputs.frameworks-matrix }}
+      ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
+      ruby-default: ${{ steps.extract.outputs.ruby-default }}
+
+    steps:
+      - name: Checkout CI utilities
+        uses: actions/checkout@v4
+        with:
+          repository: aedipamoss/child
+          ref: new
+          path: rails-ci
+
+      - name: Checkout Rails source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          path: source
+
+      - name: Parse config
+        id: extract
+        run: |
+          set -euo pipefail
+
+          json=$(ruby rails-ci/.github/scripts/parse-rails-ci-config.rb \
+            rails-ci/.github/rails-ci-config.yml \
+            source)
+
+          echo "frameworks-matrix<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$json" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "ruby-supported=$(jq -r '.ruby_supported | join(" ")' <<<"$json")" >> "$GITHUB_OUTPUT"
+          echo "ruby-default=$(jq -r '.ruby_default' <<<"$json")" >> "$GITHUB_OUTPUT"

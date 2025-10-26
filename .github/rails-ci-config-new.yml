@@ -1,0 +1,76 @@
+frameworks:
+  entries:
+    - lib: actionpack
+      variants:
+        - label: rack-2
+          rack_requirement: '~> 2.0'
+          repo_pre_steps: bundle install
+          allow_failure: false
+          rubies: default
+        - label: rack-3-0
+          rack_requirement: '~> 3.0.0'
+          repo_pre_steps: bundle install
+          allow_failure: false
+          rubies: default
+          rails_version: '>= 7.1'
+        - label: rack-head
+          rack_requirement: head
+          repo_pre_steps: "rm Gemfile.lock && bundle install"
+          allow_failure: true
+          rubies: default
+          rails_version: '>= 7.1'
+
+    - lib: activerecord
+      variants:
+        - label: mysql2
+          task: 'db:mysql:rebuild mysql2:test'
+          rubies: all
+          repo_pre_steps: &mysql_init |
+            mysql -hmysql -uroot -e "
+              CREATE USER IF NOT EXISTS 'rails'@'%' IDENTIFIED BY '';
+              GRANT ALL PRIVILEGES ON activerecord_unittest.* TO 'rails'@'%';
+              GRANT ALL PRIVILEGES ON activerecord_unittest2.* TO 'rails'@'%';
+              CREATE DATABASE IF NOT EXISTS activerecord_unittest DEFAULT CHARACTER SET utf8mb4;
+              CREATE DATABASE IF NOT EXISTS activerecord_unittest2 DEFAULT CHARACTER SET utf8mb4;
+            "
+        - label: mysql2-mariadb
+          task: 'db:mysql:rebuild mysql2:test'
+          repo_pre_steps: *mysql_init
+          mysql_image: mariadb:11.4
+          rubies: default
+        - label: mysql2-mysql-5-7
+          task: 'db:mysql:rebuild mysql2:test'
+          repo_pre_steps: *mysql_init
+          mysql_image: mysql:5.7
+          rubies: default
+        - label: mysql2-prepared-statements
+          task: 'db:mysql:rebuild mysql2:test'
+          repo_pre_steps: *mysql_init
+          mysql_prepared_statements: 'true'
+          rubies: default
+        - label: postgresql
+          task: 'db:postgresql:rebuild postgresql:test'
+          rubies: all
+        - label: sqlite3
+          task: 'sqlite3:test'
+          rubies: all
+        - label: sqlite3-mem
+          task: 'sqlite3_mem:test'
+          rubies: default
+        - label: trilogy
+          task: 'db:mysql:rebuild trilogy:test'
+          repo_pre_steps: *mysql_init
+          rubies: all
+        - label: trilogy-mariadb
+          task: 'db:mysql:rebuild trilogy:test'
+          repo_pre_steps: *mysql_init
+          mysql_image: mariadb:11.4
+          rubies: default
+        - label: trilogy-mysql-5-7
+          task: 'db:mysql:rebuild trilogy:test'
+          repo_pre_steps: *mysql_init
+          mysql_image: mysql:5.7
+          rubies: default
+
+
+

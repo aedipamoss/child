@@ -4,7 +4,8 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      #- main
+      - new
 
 permissions:
   contents: write
@@ -13,7 +14,7 @@ permissions:
 jobs:
   test-child:
     name: Run child workflow with rails/rails@main
-    uses: ./.github/workflows/rails-ci-child.yml
+    uses: ./.github/workflows/rails-ci-child-new.yml
     with:
       parent-workflow-id: ${{ github.run_id }}
       notes: Test run against rails/rails@main

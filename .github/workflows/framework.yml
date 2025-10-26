@@ -1,0 +1,54 @@
+name: Run Framework Suite
+
+on:
+  workflow_call:
+    inputs:
+      framework:
+        required: true
+        type: string
+      matrix-json:
+        required: true
+        type: string
+
+jobs:
+  run:
+    name: ${{ inputs.framework }} (${{ matrix.variant }}) [${{ matrix.ruby }}]
+    runs-on: ubuntu-latest
+    if: >-
+      ${{
+        inputs.matrix-json != '' &&
+        fromJson(inputs.matrix-json) != null &&
+        fromJson(inputs.matrix-json) != [] &&
+        (fromJson(inputs.matrix-json) | length) > 0
+      }}
+    container:
+      image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.matrix-json) }}
+    services: ${{ fromJson(matrix.services) }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        uses: aedipamoss/child/.github/actions/setup-environment@new
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          branch-name: ${{ github.ref_name }}
+
+      - name: Run framework task
+        env:
+          MYSQL_IMAGE: ${{ matrix.mysql_image }}
+          MYSQL_PREPARED_STATEMENTS: ${{ matrix.mysql_prepared_statements }}
+        timeout-minutes: 30
+        uses: aedipamoss/child/.github/actions/run-suite-task@new
+        with:
+          command: script -q -e -c "bundle exec rake ${{ matrix.task }}"
+          workdir: ${{ matrix.framework }}
+          repo-pre-steps: ${{ matrix.repo_pre_steps }}
+          pre-steps: ${{ matrix.pre_steps }}
+          rack-requirement: ${{ matrix.rack_requirement }}
+          install-node-dependencies: 'true'

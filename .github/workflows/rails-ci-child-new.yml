@@ -1,0 +1,40 @@
+name: Rails CI Child New
+
+on:
+  workflow_call:
+
+jobs:
+  load-config:
+    uses: ./.github/workflows/load-config.yml
+
+  actionpack:
+    name: Action Pack
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: actionpack
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.actionpack) }}
+
+  activerecord:
+    name: Active Record
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activerecord
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.activerecord) }}
+
+  activesupport:
+    name: Active Support
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activesupport
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.activesupport) }}
+
+  railties:
+    name: Railties
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: railties
+      matrix-json: ${{ toJson(fromJson(needs.load-config.outputs.frameworks-matrix).frameworks.railties) }}
