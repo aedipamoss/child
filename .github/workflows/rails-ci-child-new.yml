@@ -7,7 +7,7 @@ on:
         description: Identifier of the parent workflow run
         required: true
         type: string
-      source-repository:
+      source-repo:
         description: Repository containing the Rails source to test
         required: false
         type: string
@@ -19,6 +19,9 @@ on:
 jobs:
   load-config:
     uses: ./.github/workflows/load-config.yml
+    with:
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
   actionpack:
     name: Action Pack

@@ -2,6 +2,15 @@ name: Load Rails CI Configuration
 
 on:
   workflow_call:
+    inputs:
+      source-repo:
+        description: Repository containing the Rails source to test
+        required: false
+        type: string
+      source-ref:
+        description: Git ref of the Rails source to test
+        required: false
+        type: string
 
 jobs:
   load-config:
@@ -23,8 +32,8 @@ jobs:
       - name: Checkout Rails source
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
+          repository: ${{ inputs.source-repo }}
+          ref: ${{ inputs.source-ref }}
           path: source
 
       - name: Parse config
