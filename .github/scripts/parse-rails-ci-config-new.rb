@@ -269,7 +269,7 @@ def expand_variant(lib, variant)
       "rack_requirement" => variant["rack_requirement"].to_s,
       "mysql_image" => variant["mysql_image"].to_s,
       "mysql_prepared_statements" => variant["mysql_prepared_statements"].to_s,
-      "allow_failure" => !!variant["allow_failure"] || RUBY_CATALOG[:soft_fail_map][ruby_ver],
+      "allow_failure" => !!variant["allow_failure"] || ruby_catalog[:soft_fail_map][ruby_ver],
       "services" => JSON.dump(default_services(variant))
     }
   end
@@ -294,8 +294,8 @@ end
 
 output = {
   frameworks: frameworks,
-  ruby_supported: RUBY_CATALOG[:supported],
-  ruby_default: RUBY_CATALOG[:default]
+  ruby_supported: ruby_catalog[:supported],
+  ruby_default: ruby_catalog[:default]
 }
 
 puts JSON.pretty_generate(output)
