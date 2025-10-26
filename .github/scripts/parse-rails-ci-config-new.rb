@@ -298,7 +298,7 @@ abort 'GITHUB_OUTPUT environment variable is not set.' if output_path.nil? || ou
 puts JSON.pretty_generate(output)
 
 File.open(output_path, 'a') do |file|
-  outputs.each do |key, value|
+  output.each do |key, value|
     serialized = value.is_a?(String) ? value : JSON.dump(value)
     file.puts("#{key}=#{serialized}")
   end
