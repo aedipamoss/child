@@ -2,6 +2,7 @@ frameworks:
   entries:
     - lib: actionpack
       variants:
+        - label: default
         - label: rack-2
           rack_requirement: '~> 2.0'
           repo_pre_steps: bundle install
@@ -71,6 +72,47 @@ frameworks:
           repo_pre_steps: *mysql_init
           mysql_image: mysql:5.7
           rubies: default
+
+    - lib: actioncable
+      variants:
+        - label: default
+          repo_pre_steps: bundle exec rake -f activerecord/Rakefile db:postgresql:rebuild
+        - label: integration
+          task: 'test:integration'
+
+    - lib: actionmailbox
+      variants:
+        - label: default
+
+    - lib: actionmailer
+      variants:
+        - label: default
+
+    - lib: actiontext
+      variants:
+        - label: default
+    - lib: actionview
+      variants:
+        - label: default
+    - lib: activejob
+      variants:
+        - label: default
+        - label: integration
+          task: 'test:integration'
+          allow_failure: true
+    - lib: activemodel
+      variants:
+        - label: default
+    - lib: activestorage
+      variants:
+        - label: default
+    - lib: activesupport
+      variants:
+        - label: default
+    - lib: guides
+      variants:
+        - label: default
+
 
 
 
