@@ -255,12 +255,12 @@ def expand_ruby_tokens(tokens, catalog)
   end
 end
 
-def expand_variant(lib, variant)
+def expand_variant(lib, variant, catalog)
   rails_requirement =
     variant.key?("rails_version") ? variant.delete("rails_version") : ""
   return [] unless requirement_satisfied?(rails_requirement, rails_version)
 
-  expand_ruby_tokens(variant["rubies"], ruby_catalog).map do |ruby_ver|
+  expand_ruby_tokens(variant["rubies"], catalog).map do |ruby_ver|
     {
       "display_name" => "#{lib} (#{variant["label"]})",
       "framework" => lib,
@@ -272,7 +272,7 @@ def expand_variant(lib, variant)
       "rack_requirement" => variant["rack_requirement"].to_s,
       "mysql_image" => variant["mysql_image"].to_s,
       "mysql_prepared_statements" => variant["mysql_prepared_statements"].to_s,
-      "allow_failure" => !!variant["allow_failure"] || ruby_catalog[:soft_fail_map][ruby_ver],
+      "allow_failure" => !!variant["allow_failure"] || catalog[:soft_fail_map][ruby_ver],
       "services" => JSON.dump(default_services(variant))
     }
   end
@@ -287,7 +287,7 @@ frameworks = {}
 (config.dig("frameworks", "entries") || []).each do |entry|
   lib = entry["lib"]
   next unless lib
-  frameworks[lib] = (entry["variants"] || []).flat_map { |v| expand_variant(lib, v) }
+  frameworks[lib] = (entry["variants"] || []).flat_map { |v| expand_variant(lib, v, ruby_catalog) }
 end
 
 # --------------------------------------------------------------------
