@@ -65,7 +65,7 @@ jobs:
     with:
       framework: actionpack
       matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).actionpack) }}
-      source-repo: ${{ inputs.source-repository != '' && inputs.source-repository || github.repository }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
   #activerecord:
