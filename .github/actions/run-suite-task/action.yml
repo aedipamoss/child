@@ -115,7 +115,9 @@ runs:
 
           echo "::group::Run Task"
           bash -lc "${RUN_TASK_COMMAND}"
+          local status=$?
           echo "::endgroup::"
+          return $status
         }
 
         attempt=1
