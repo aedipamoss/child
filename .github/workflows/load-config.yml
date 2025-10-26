@@ -14,18 +14,22 @@ on:
     outputs:
       frameworks:
         description: JSON representation of the frameworks configuration
-        value: ${{ steps.extract.outputs.frameworks }}
+        value: ${{ jobs.load-config.outputs.frameworks }}
       ruby-supported:
         description: JSON array of supported Ruby versions
-        value: ${{ steps.extract.outputs.ruby-supported }}
+        value: ${{ jobs.load-config.outputs.ruby-supported }}
       ruby-default:
         description: Default Ruby version
-        value: ${{ steps.extract.outputs.ruby-default }}
+        value: ${{ jobs.load-config.outputs.ruby-default }}
 
 jobs:
   load-config:
     name: Load Config
     runs-on: ubuntu-latest
+    outputs:
+      frameworks: ${{ steps.extract.outputs.frameworks }}
+      ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
+      ruby-default: ${{ steps.extract.outputs.ruby-default }}
     steps:
       - name: Checkout CI utilities
         uses: actions/checkout@v4
@@ -47,3 +51,12 @@ jobs:
           ruby "${{ github.workspace }}/rails-ci/.github/scripts/parse-rails-ci-config-new.rb" \
             "${{ github.workspace }}/rails-ci/.github/rails-ci-config-new.yml" \
             "${{ github.workspace }}/source"
+
+      - name: Show extracted config
+        run: |
+          echo "Frameworks config:"
+          echo "${{ steps.extract.outputs.frameworks }}"
+          echo "Ruby supported:"
+          echo "${{ steps.extract.outputs.ruby-supported }}"
+          echo "Ruby default:"
+          echo "${{ steps.extract.outputs.ruby-default }}"
