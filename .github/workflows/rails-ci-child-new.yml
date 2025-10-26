@@ -55,9 +55,8 @@ jobs:
         run: |
           echo "Frameworks config:"
           echo '${{ needs.load-config.outputs.frameworks }}'
-          echo "All outputs:"
-          echo '${{ toJson(needs.load-config.outputs) }}'
-
+          echo "Action Pack"
+          echo '${{ fromJson(needs.load-config.outputs.frameworks).actionpack }}'
 
   actionpack:
     name: Action Pack
@@ -65,28 +64,28 @@ jobs:
     uses: ./.github/workflows/framework.yml
     with:
       framework: actionpack
-      matrix: ${{ needs.load-config.outputs.frameworks.actionpack }}
+      matrix: ${{ fromJson(needs.load-config.outputs.frameworks).actionpack }}
 
-  activerecord:
-    name: Active Record
-    needs: load-config
-    uses: ./.github/workflows/framework.yml
-    with:
-      framework: activerecord
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activerecord) }}
+  #activerecord:
+  #  name: Active Record
+  #  needs: load-config
+  #  uses: ./.github/workflows/framework.yml
+  #  with:
+  #    framework: activerecord
+  #    matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activerecord) }}
 
-  activesupport:
-    name: Active Support
-    needs: load-config
-    uses: ./.github/workflows/framework.yml
-    with:
-      framework: activesupport
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activesupport) }}
+  #activesupport:
+  #  name: Active Support
+  #  needs: load-config
+  #  uses: ./.github/workflows/framework.yml
+  #  with:
+  #    framework: activesupport
+  #    matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activesupport) }}
 
-  railties:
-    name: Railties
-    needs: load-config
-    uses: ./.github/workflows/framework.yml
-    with:
-      framework: railties
-      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.railties) }}
+  #railties:
+  #  name: Railties
+  #  needs: load-config
+  #  uses: ./.github/workflows/framework.yml
+  #  with:
+  #    framework: railties
+  #    matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.railties) }}
