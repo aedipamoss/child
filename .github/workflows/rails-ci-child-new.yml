@@ -68,13 +68,15 @@ jobs:
       source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
       source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
-  #activerecord:
-  #  name: Active Record
-  #  needs: load-config
-  #  uses: ./.github/workflows/framework.yml
-  #  with:
-  #    framework: activerecord
-  #    matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).frameworks.activerecord) }}
+  activerecord:
+    name: Active Record
+    needs: load-config
+    uses: ./.github/workflows/framework.yml
+    with:
+      framework: activerecord
+      matrix: ${{ toJson(fromJson(needs.load-config.outputs.frameworks).activerecord) }}
+      source-repo: ${{ inputs.source-repo != '' && inputs.source-repo || github.repository }}
+      source-ref: ${{ inputs.source-ref != '' && inputs.source-ref || github.sha }}
 
   #activesupport:
   #  name: Active Support
