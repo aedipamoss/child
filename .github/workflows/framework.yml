@@ -44,7 +44,7 @@ env:
 
 jobs:
   run:
-    name: ${{ inputs.framework }} (${{ matrix.variant }}) [${{ matrix.ruby }}]
+    name: ${{ matrix.display_name }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/rails-ci:${{ matrix.ruby }}
