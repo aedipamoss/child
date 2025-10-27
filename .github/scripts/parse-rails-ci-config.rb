@@ -268,7 +268,7 @@ def expand_variant(lib, variant, catalog)
       ruby: ruby_ver,
       nodejs: variant.key?("nodejs") ? variant["nodejs"].to_s : "false",
       task: variant.key?("task") ? variant["task"].to_s : "test",
-      #shards: variant.key?("shards") ? variant["shards"].to_s : "false",
+      shards: variant.key?("shards") ? variant["shards"].to_s : "false",
       repo_pre_steps: variant["repo_pre_steps"].to_s,
       pre_steps: variant["pre_steps"].to_s,
       rack_requirement: variant["rack_requirement"].to_s,
