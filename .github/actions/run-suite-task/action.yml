@@ -64,8 +64,8 @@ runs:
             return 1
           fi
 
-          if [ "${BUILDKITE_PARALLEL_JOB+x}" ] && [ -z "${BUILDKITE_PARALLEL_JOB}" ]; then
-            unset BUILDKITE_PARALLEL_JOB || true
+          if [ "${BUILDKITE_PARALLEL_JOB_COUNT+x}" ] && [ -z "${BUILDKITE_PARALLEL_JOB_COUNT}" ]; then
+            unset BUILDKITE_PARALLEL_JOB_COUNT || true
           fi
           echo "::group::env>"
           env
