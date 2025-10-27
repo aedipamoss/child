@@ -21,8 +21,7 @@ runs:
   steps:
     - name: Cache bundle
       id: bundle-cache
-      if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
-      uses: actions/cache@v4
+      uses: actions/cache/restore@v4
       with:
         path: /usr/local/bundle
         key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles('Gemfile.lock') }}
@@ -44,3 +43,10 @@ runs:
         echo "::group::bundle env"
         bundle env
         echo "::endgroup::"
+    - name: Save bundle cache
+      id: save-bundle-cache
+      if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
+      uses: actions/cache/save@v4
+      with:
+        path: /usr/local/bundle
+        key: bundle-${{ runner.os }}-${{ inputs.ruby-version }}-${{ inputs.branch-name }}-${{ hashFiles('Gemfile.lock') }}
