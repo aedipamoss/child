@@ -35,6 +35,7 @@ runs:
       run: |
         echo "::group::bundle install"
         set -eo pipefail
+        rm Gemfile.lock
         bundle install --jobs 4 --retry 3
         echo "::endgroup::"
     - name: bundle env
