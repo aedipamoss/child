@@ -67,9 +67,6 @@ runs:
           if [ "${BUILDKITE_PARALLEL_JOB_COUNT+x}" ] && [ -z "${BUILDKITE_PARALLEL_JOB_COUNT}" ]; then
             unset BUILDKITE_PARALLEL_JOB_COUNT || true
           fi
-          echo "::group::env>"
-          env
-          echo "::endgroup::"
 
           if [ -n "${RUN_TASK_RACK_REQUIREMENT}" ] && [ "${RUN_TASK_RACK_REQUIREMENT}" != "null" ]; then
             export RACK="${RUN_TASK_RACK_REQUIREMENT}"
