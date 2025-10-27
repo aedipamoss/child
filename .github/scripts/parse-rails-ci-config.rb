@@ -267,7 +267,7 @@ def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
 
   expand_ruby_tokens(variant["rubies"], catalog).map do |ruby_ver|
     entry = {
-      display_name: "#{lib} (#{variant["label"]})#{shard_label(shard, total_shards)}",
+      display_name: "#{lib} (#{variant["label"]}) [#{ruby_ver}]#{shard_label(shard, total_shards)}",
       framework: lib,
       variant: variant["label"],
       ruby: ruby_ver,
