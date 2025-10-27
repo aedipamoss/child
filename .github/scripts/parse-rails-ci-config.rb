@@ -277,7 +277,7 @@ def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
       services: JSON.dump(framework_services(mysql_image: variant["mysql_image"]))
     }
 
-    if total_shards
+    if total_shards > 1
       entry[:total_shards] = total_shards
       entry[:shard] = shard
     end
