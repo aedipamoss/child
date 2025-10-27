@@ -255,6 +255,12 @@ def expand_ruby_tokens(tokens, catalog)
   end
 end
 
+def shard_label(shard, total_shards)
+  if [shard.to_i, total_shards.to_i].max > 1
+    " #{shard}/#{total_shards}"
+  end
+end
+
 def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
   rails_requirement =
     variant.key?("rails_version") ? variant.delete("rails_version") : ""
@@ -262,7 +268,7 @@ def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
 
   expand_ruby_tokens(variant["rubies"], catalog).map do |ruby_ver|
     entry = {
-      display_name: "#{lib} (#{variant["label"]})",
+      display_name: "#{lib} (#{variant["label"]})#{shard_label(shard, total_shards)}",
       framework: lib,
       variant: variant["label"],
       ruby: ruby_ver,
