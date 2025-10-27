@@ -296,7 +296,7 @@ frameworks = {}
   variants = entry["variants"] || []
 
   frameworks[lib] = variants.flat_map do |variant|
-    Array.new(total_shards).flat_map do |shard|
+    (1..total_shards).flat_map do |shard|
       expand_variant(lib, variant.dup, ruby_catalog, total_shards:, shard: shard + 1)
     end
   end
