@@ -12,6 +12,7 @@ on:
       shards:
         required: false
         type: string
+        default: 'false'
       source-repo:
         required: true
         type: string
@@ -56,7 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
-        shards: ${{ fromJson(inputs.shards) || 'false' }}
+        shards: ${{ fromJson(inputs.shards) }}
     services: ${{ fromJson(matrix.services) }}
 
     steps:
