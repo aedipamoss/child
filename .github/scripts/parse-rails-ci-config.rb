@@ -256,9 +256,8 @@ def expand_ruby_tokens(tokens, catalog)
 end
 
 def shard_label(shard, total_shards)
-  if [shard.to_i, total_shards.to_i].max > 1
-    " #{shard}/#{total_shards}"
-  end
+  return "" unless total_shards.to_i > 1
+  " #{shard}/#{total_shards}"
 end
 
 def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
