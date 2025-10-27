@@ -54,6 +54,9 @@ jobs:
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
     services: ${{ fromJson(matrix.services) }}
+    env:
+      BUILDKITE_PARALLEL_JOB: ${{ matrix.shard }}
+      BUILDKITE_PARALLEL_JOB_COUNT: ${{ matrix.total_shards }}
 
     steps:
       - name: Checkout source
