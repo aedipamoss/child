@@ -255,20 +255,19 @@ def expand_ruby_tokens(tokens, catalog)
   end
 end
 
-def expand_variant(lib, variant, catalog)
+def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
   rails_requirement =
     variant.key?("rails_version") ? variant.delete("rails_version") : ""
   return [] unless requirement_satisfied?(rails_requirement, rails_version)
 
   expand_ruby_tokens(variant["rubies"], catalog).map do |ruby_ver|
-    {
+    entry = {
       display_name: "#{lib} (#{variant["label"]})",
       framework: lib,
       variant: variant["label"],
       ruby: ruby_ver,
       nodejs: variant.key?("nodejs") ? variant["nodejs"].to_s : "false",
       task: variant.key?("task") ? variant["task"].to_s : "test",
-      shards: variant.key?("shards") ? variant["shards"].to_s : "false",
       repo_pre_steps: variant["repo_pre_steps"].to_s,
       pre_steps: variant["pre_steps"].to_s,
       rack_requirement: variant["rack_requirement"].to_s,
@@ -277,23 +276,34 @@ def expand_variant(lib, variant, catalog)
       allow_failure: !!variant["allow_failure"] || catalog[:soft_fail_map][ruby_ver],
       services: JSON.dump(framework_services(mysql_image: variant["mysql_image"]))
     }
+
+    if total_shards
+      entry[:total_shards] = total_shards
+      entry[:shard] = shard
+    end
+
+    entry
   end
 end
 
 frameworks = {}
-shards = {}
 
 (config.dig("frameworks", "entries") || []).each do |entry|
   lib = entry["lib"]
   next unless lib
 
-  frameworks[lib] = (entry["variants"] || []).flat_map { |v| expand_variant(lib, v, ruby_catalog) }
-  shards[lib] = entry["shards"] if entry.key?("shards")
+  total_shards = [entry.delete("shards").to_i, 1].max
+  variants = entry["variants"] || []
+
+  frameworks[lib] = variants.flat_map do |variant|
+    Array(total_shards) do |shard|
+      expand_variant(lib, variant.dup, ruby_catalog, total_shards:, shard: shard + 1)
+    end
+  end
 end
 
 output = {
   "frameworks" => frameworks,
-  "shards" => shards,
   "ruby-supported" => ruby_catalog[:supported],
   "ruby-default" => ruby_catalog[:default]
 }

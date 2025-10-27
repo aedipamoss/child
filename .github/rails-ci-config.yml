@@ -121,22 +121,18 @@ frameworks:
       variants:
         - label: default
           rubies: all
-          shards: true
         - label: rack-2
           rack_requirement: '~> 2.0'
           repo_pre_steps: bundle install
           rubies: default
-          shards: true
         - label: rack-3-0
           rack_requirement: '~> 3.0.0'
           repo_pre_steps: bundle install
           rubies: default
           rails_version: '>= 7.1'
-          shards: true
         - variant: rack-head
           rack_requirement: head
           repo_pre_steps: "rm Gemfile.lock && bundle install"
           allow_failure: true
           rubies: default
-          shards: true
 
