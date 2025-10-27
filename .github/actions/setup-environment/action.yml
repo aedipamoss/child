@@ -4,7 +4,7 @@ inputs:
   ruby-version:
     description: Ruby version to install.
     required: true
-  bundler-cache:
+  save-bundler-cache:
     description: Whether to enable Bundler caching.
     required: false
     default: 'true'
@@ -44,7 +44,7 @@ runs:
         echo "::endgroup::"
     - name: Save bundle cache
       id: save-bundle-cache
-      if: ${{ inputs.bundler-cache == 'true' && github.event_name != 'pull_request' }}
+      if: ${{ inputs.save-bundler-cache == 'true' && github.event_name != 'pull_request' }}
       uses: actions/cache/save@v4
       with:
         path: /usr/local/bundle

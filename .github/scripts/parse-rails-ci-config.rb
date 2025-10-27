@@ -272,6 +272,7 @@ def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
       variant: variant["label"],
       ruby: ruby_ver,
       nodejs: variant.key?("nodejs") ? variant["nodejs"].to_s : "false",
+      save_bundler_cache: variant.key?("save_bundler_cache") ? variant["save_bundler_cache"].to_s : "true",
       task: variant.key?("task") ? variant["task"].to_s : "test",
       repo_pre_steps: variant["repo_pre_steps"].to_s,
       pre_steps: variant["pre_steps"].to_s,

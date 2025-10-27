@@ -70,6 +70,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           branch-name: ${{ github.ref_name }}
+          save-bundler-cache: ${{ matrix.save_bundler_cache || 'true' }}
 
       - name: Run framework task
         env:
