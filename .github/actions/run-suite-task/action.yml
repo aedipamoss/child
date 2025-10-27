@@ -96,6 +96,12 @@ runs:
             return 1
           fi
 
+          if ! [ -d "$PWD/railties/exe" ]; then
+            echo "::group::Setup railties in PATH"
+            export PATH="$PATH:$PWD/railties/bin"
+            echo "::endgroup::"
+          fi
+
           cd "$workdir"
 
           if [ -n "${RUN_TASK_PRE_STEPS}" ] && [ "${RUN_TASK_PRE_STEPS}" != "null" ]; then

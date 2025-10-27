@@ -21,6 +21,9 @@ frameworks:
           allow_failure: true
           rubies: default
           rails_version: '>= 7.1'
+        - label: isolated
+          task: 'test:isolated'
+          rubies: default
 
     - lib: activerecord
       variants:
@@ -73,6 +76,22 @@ frameworks:
           repo_pre_steps: *mysql_init
           mysql_image: mysql:5.7
           rubies: default
+          rails_version: '>= 7.1'
+        - label: mysql2-isolated
+          task: 'db:mysql:rebuild mysql2:isolated_test'
+          repo_pre_steps: *mysql_init
+          rubies: default
+        - label: postgresql-isolated
+          task: 'db:postgresql:rebuild postgresql:isolated_test'
+          rubies: default
+        - label: sqlite3-isolated
+          task: 'sqlite3:isolated_test'
+          rubies: default
+        - label: trilogy-isolated
+          task: 'db:mysql:rebuild trilogy:isolated_test'
+          repo_pre_steps: *mysql_init
+          rails_version: '>= 7.1'
+          rubies: default
 
     - lib: actioncable
       variants:
@@ -93,6 +112,9 @@ frameworks:
       variants:
         - label: default
           rubies: all
+        - label: isolated
+          task: 'test:isolated'
+          rubies: default
 
     - lib: actiontext
       variants:
@@ -104,6 +126,9 @@ frameworks:
       variants:
         - label: default
           rubies: all
+        - label: isolated
+          task: 'test:isolated'
+          rubies: default
 
     - lib: activejob
       variants:
@@ -113,11 +138,17 @@ frameworks:
           task: 'test:integration'
           allow_failure: true
           rubies: all
+        - label: isolated
+          task: 'test:isolated'
+          rubies: default
 
     - lib: activemodel
       variants:
         - label: default
           rubies: all
+        - label: isolated
+          task: 'test:isolated'
+          rubies: default
 
     - lib: activestorage
       variants:
@@ -129,6 +160,13 @@ frameworks:
       variants:
         - label: default
           rubies: all
+        - label: isolated
+          task: 'test:isolated'
+          rubies: default
+          services:
+            memcached:
+              image: memcached:1.6-alpine
+              ports: ['11211:11211']
 
     - lib: guides
       variants:
@@ -153,5 +191,5 @@ frameworks:
           rack_requirement: head
           repo_pre_steps: "rm Gemfile.lock && bundle install"
           allow_failure: true
+          rails_version: '>= 7.1'
           rubies: default
-
