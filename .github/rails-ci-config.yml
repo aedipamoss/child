@@ -3,6 +3,7 @@ frameworks:
     - lib: actionpack
       variants:
         - label: default
+          rubies: all
         - label: rack-2
           rack_requirement: '~> 2.0'
           repo_pre_steps: bundle install
@@ -78,43 +79,61 @@ frameworks:
         - label: default
           repo_pre_steps: bundle exec rake -f activerecord/Rakefile db:postgresql:rebuild
           nodejs: true
+          rubies: all
         - label: integration
           task: 'test:integration'
+          rubies: all
 
     - lib: actionmailbox
       variants:
         - label: default
+          rubies: all
 
     - lib: actionmailer
       variants:
         - label: default
+          rubies: all
 
     - lib: actiontext
       variants:
         - label: default
           nodejs: true
+          rubies: all
+
     - lib: actionview
       variants:
         - label: default
+          rubies: all
+
     - lib: activejob
       variants:
         - label: default
+          rubies: all
         - label: integration
           task: 'test:integration'
           allow_failure: true
+          rubies: all
+
     - lib: activemodel
       variants:
         - label: default
+          rubies: all
+
     - lib: activestorage
       variants:
         - label: default
           nodejs: true
+          rubies: all
+
     - lib: activesupport
       variants:
         - label: default
+          rubies: all
+
     - lib: guides
       variants:
         - label: default
+          rubies: all
 
     - lib: railties
       shards: 12
