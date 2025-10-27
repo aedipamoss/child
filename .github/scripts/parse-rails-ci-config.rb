@@ -284,7 +284,8 @@ def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
 
     if total_shards > 1
       entry[:total_shards] = total_shards
-      entry[:shard] = shard
+      entry[:shard] = shard + 1
+      entry[:parallel_job] = shard
     end
 
     entry
@@ -302,7 +303,7 @@ frameworks = {}
 
   frameworks[lib] = variants.flat_map do |variant|
     (1..total_shards).flat_map do |shard|
-      expand_variant(lib, variant.dup, ruby_catalog, total_shards:, shard: shard + 1)
+      expand_variant(lib, variant.dup, ruby_catalog, total_shards:, shard: shard)
     end
   end
 end
