@@ -285,7 +285,7 @@ def expand_variant(lib, variant, catalog, total_shards: nil, shard: nil)
     if total_shards > 1
       entry[:total_shards] = total_shards
       entry[:shard] = shard + 1
-      entry[:parallel_job] = shard
+      entry[:parallel_job] = shard - 1
     end
 
     entry
