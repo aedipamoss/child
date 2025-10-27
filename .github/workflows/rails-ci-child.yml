@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       frameworks: ${{ steps.extract.outputs.frameworks }}
+      shards: ${{ steps.extract.outputs.shards }}
       ruby-supported: ${{ steps.extract.outputs.ruby-supported }}
       ruby-default: ${{ steps.extract.outputs.ruby-default }}
     steps:

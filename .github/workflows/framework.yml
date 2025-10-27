@@ -11,8 +11,8 @@ on:
         type: string
       shards:
         required: false
-        type: string
-        default: 'false'
+        type: boolean
+        default: false
       source-repo:
         required: true
         type: string
