@@ -98,6 +98,7 @@ runs:
 
           if ! [ -d "$PWD/railties/exe" ]; then
             echo "::group::Setup railties in PATH"
+            ls -al $PWD/railties/bin
             export PATH="$PATH:$PWD/railties/bin"
             echo "::endgroup::"
           fi
